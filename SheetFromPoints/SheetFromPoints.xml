@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <executable>
   <category>CBM.Geometry</category>
-  <title>SheetFromPoints</title>
+  <title>Sheet From Points</title>
   <description><![CDATA[Create a sheet model from a set of fiducial points]]></description>
   <version>0.1.0.</version>
   <documentation-url>https://github.com/SlicerCBM/SlicerCBM/tree/master/SheetFromPoints</documentation-url>
