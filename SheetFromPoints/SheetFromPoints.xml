@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<executable>
+  <category>CBM.Modeling</category>
+  <title>SheetFromPoints</title>
+  <description><![CDATA[Create a sheet model from a set of fiducial points]]></description>
+  <version>0.1.0.</version>
+  <documentation-url>https://github.com/SlicerCBM/SlicerCBM/SheetFromPoints</documentation-url>
+  <license/>
+  <contributor>Benjamin Zwick</contributor>
+  <acknowledgements><![CDATA[]]></acknowledgements>
+  <parameters>
+    <pointfile>
+      <name>inputPoints</name>
+      <label>Input Points</label>
+      <channel>input</channel>
+      <longflag>input</longflag>
+      <description><![CDATA[Input fiducial points]]></description>
+    </pointfile>
+    <geometry type="model">
+      <name>outputModel</name>
+      <label>Output Model</label>
+      <channel>output</channel>
+      <longflag>output</longflag>
+      <description><![CDATA[Model generated from points]]></description>
+    </geometry>
+    <double>
+      <name>thickness</name>
+      <label>Thickness</label>
+      <channel>input</channel>
+      <longflag>thickness</longflag>
+      <description><![CDATA[Thickness of sheet]]></description>
+    </double>
+  </parameters>
+</executable>
