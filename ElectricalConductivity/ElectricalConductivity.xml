@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<executable>
+  <category>CBM.Property</category>
+  <title>Electrical Conductivity</title>
+  <description><![CDATA[Assign electrical conductivity to voxels of an image.]]></description>
+  <version>0.1.0.</version>
+  <documentation-url>https://github.com/SlicerCBM/SlicerCBM/tree/master/ElectricalConductivity</documentation-url>
+  <license/>
+  <contributor>Benjamin Zwick</contributor>
+  <acknowledgements><![CDATA[]]></acknowledgements>
+  <parameters>
+    <label>IO</label>
+    <description><![CDATA[Input/output parameters]]></description>
+    <image type="label">
+      <name>inputLabelmap</name>
+      <label>Input Labelmap</label>
+      <channel>input</channel>
+      <longflag>labelmap</longflag>
+      <description><![CDATA[Input Labelmap]]></description>
+    </image>
+    <image type="tensor">
+      <name>inputDTI</name>
+      <label>Input DTI</label>
+      <channel>input</channel>
+      <longflag>dti</longflag>
+      <description><![CDATA[Input DTI Volume]]></description>
+    </image>
+    <!-- <image type="tensor" reference="inputDTI"> -->
+    <image type="tensor">
+      <name>outputVolume</name>
+      <label>Output Volume</label>
+      <channel>output</channel>
+      <longflag>output</longflag>
+      <description><![CDATA[Output Volume]]></description>
+    </image>
+    <boolean>
+      <name>tuchSwitch</name>
+      <label>Use Tuch's method</label>
+      <longflag>tuch</longflag>
+      <default>false</default>
+    </boolean>
+  </parameters>
+</executable>

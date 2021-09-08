@@ -19,7 +19,8 @@ include(${Slicer_USE_FILE})
 
 #-----------------------------------------------------------------------------
 # Extension modules
-add_subdirectory(Modules/SheetFromPoints)
+add_subdirectory(ElectricalConductivity)
+add_subdirectory(SheetFromPoints)
 
 #-----------------------------------------------------------------------------
 include(${Slicer_EXTENSION_GENERATE_CONFIG})
