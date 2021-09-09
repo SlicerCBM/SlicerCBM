@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="utf-8"?>
+<executable>
+  <category>CBM.Mesh</category>
+  <title>MVox Mesh Generator</title>
+  <description><![CDATA[Create a hexahedral mesh using MVox]]></description>
+  <version>0.1.0.</version>
+  <documentation-url>https://github.com/SlicerCBM/SlicerCBM/tree/master/MVoxMeshGenerator</documentation-url>
+  <license/>
+  <contributor>Benjamin Zwick</contributor>
+  <acknowledgements><![CDATA[]]></acknowledgements>
+  <parameters>
+    <label>Files</label>
+    <file>
+      <name>mesh_ofile</name>
+      <label>Mesh output file</label>
+      <channel>output</channel>
+      <longflag>omesh</longflag>
+      <description><![CDATA["Output mesh file to use (VTK or MFEM format).]]></description>
+    </file>
+    <file>
+      <name>tensors_ofile</name>
+      <label>Tensors output file</label>
+      <channel>output</channel>
+      <longflag>otensor</longflag>
+      <description><![CDATA[Output tensors file to use (MFEM format).]]></description>
+    </file>
+    <image>
+      <name>masks_ifile</name>
+      <label>Mask input file</label>
+      <channel>input</channel>
+      <longflag>imask</longflag>
+      <description><![CDATA[Masks file to use (NRRD format).]]></description>
+    </image>
+    <image>
+      <name>attributes_ifile</name>
+      <label>Attribute input image</label>
+      <channel>input</channel>
+      <longflag>iattr</longflag>
+      <description><![CDATA[Attributes file to use (NRRD format).]]></description>
+    </image>
+    <image type="tensor">
+      <name>tensors_ifile</name>
+      <label>Tensor input image</label>
+      <channel>input</channel>
+      <longflag>itensor</longflag>
+      <description><![CDATA[Tensors file to use (NRRD format).]]></description>
+    </image>
+    <boolean>
+      <name>symmetric</name>
+      <label>Symmetric tensor output</label>
+      <longflag>sym</longflag>
+      <description><![CDATA[Enable symmetric tensor output.]]></description>
+    </boolean>
+  </parameters>
+  <parameters advanced="true">
+    <label>Image parameters</label>
+    <integer>
+      <name>nx</name>
+      <label>nx</label>
+      <longflag>nx</longflag>
+      <description><![CDATA[Number of voxels along x axis.]]></description>
+    </integer>
+    <integer>
+      <name>ny</name>
+      <label>ny</label>
+      <longflag>ny</longflag>
+      <description><![CDATA[Number of voxels along y axis.]]></description>
+    </integer>
+    <integer>
+      <name>nz</name>
+      <label>nz</label>
+      <longflag>nz</longflag>
+      <description><![CDATA[Number of voxels along z axis.]]></description>
+    </integer>
+    <integer>
+      <name>vx</name>
+      <label>vx</label>
+      <longflag>vx</longflag>
+      <description><![CDATA[Voxel spacing along x axis.]]></description>
+    </integer>
+    <integer>
+      <name>vy</name>
+      <label>vy</label>
+      <longflag>vy</longflag>
+      <description><![CDATA[Voxel spacing along y axis.]]></description>
+    </integer>
+    <integer>
+      <name>vz</name>
+      <label>vz</label>
+      <longflag>vz</longflag>
+      <description><![CDATA[Voxel spacing along z axis.]]></description>
+    </integer>
+  </parameters>
+</executable>
