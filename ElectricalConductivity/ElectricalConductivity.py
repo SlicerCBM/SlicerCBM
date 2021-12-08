@@ -31,10 +31,20 @@ parser.add_argument('--dti', required=True,
 parser.add_argument('--output', required=True,
                     help='Output file containing conductivity.')
 
-# tuch
-parser.add_argument('--tuch', default=False, action='store_true',
+# Tuch WM
+parser.add_argument('--tuch-wm', default=False, action='store_true',
                     help='Use Tuch method for white matter.')
-parser.add_argument('--no-tuch', dest='tuch', action='store_false')
+parser.add_argument('--no-tuch-wm', dest='tuch_wm', action='store_false')
+
+# Tuch GM
+parser.add_argument('--tuch-gm', default=False, action='store_true',
+                    help='Use Tuch method for gray matter.')
+parser.add_argument('--no-tuch-gm', dest='tuch_gm', action='store_false')
+
+# Tuch CSF
+parser.add_argument('--tuch-csf', default=False, action='store_true',
+                    help='Use Tuch method for cerebrospinal fluid.')
+parser.add_argument('--no-tuch-csf', dest='tuch_csf', action='store_false')
 
 args = parser.parse_args()
 print(args)
@@ -153,9 +163,17 @@ C00[wm]    = C11[wm]    = C22[wm]    = con_wm
 C00[sheet] = C11[sheet] = C22[sheet] = con_sheet
 
 # ------------------------------------------------------------------------------
-# White matter conductivity using Tuch's method
+# Anisotropic conductivity using Tuch's method
 
-if args.tuch:
+tuch_labels = []
+if args.tuch_wm:
+    tuch_labels.append(wm_label)
+if args.tuch_gm:
+    tuch_labels.append(gm_label)
+if args.tuch_csf:
+    tuch_labels.append(csf_label)
+
+if len(tuch_labels) > 0:
     tic = time.time()
     voxels_with_negative_eigenvalues = []
     min_wm_mean_cond = np.inf
@@ -165,11 +183,10 @@ if args.tuch:
     avg_wm_mid_eigenvalue = 0
     avg_wm_min_eigenvalue = 0
     num_wm_voxels = 0
-    print("Compute WM conductivity")
+    print("Compute anisotropic conductivity")
     D = np.zeros((3, 3))
     for i, label in enumerate(tqdm(seg_data[mask > 0])):
-        if label == wm_label:
-            num_wm_voxels += 1
+        if label in tuch_labels:
             # D = np.array([[D00[i], D01[i], D02[i]],
             #               [D01[i], D11[i], D12[i]],
             #               [D02[i], D12[i], D22[i]]], dtype=float)
@@ -225,12 +242,14 @@ if args.tuch:
             w = w[idx]
             v = v[:,idx]
             mc = np.sum(w) / 3.0 # mean conductivity
-            min_wm_mean_cond = min(min_wm_mean_cond, mc)
-            max_wm_mean_cond = max(max_wm_mean_cond, mc)
-            avg_wm_mean_cond += mc
-            avg_wm_max_eigenvalue += w[0]
-            avg_wm_mid_eigenvalue += w[1]
-            avg_wm_min_eigenvalue += w[2]
+            if label == wm_label:
+                num_wm_voxels += 1
+                min_wm_mean_cond = min(min_wm_mean_cond, mc)
+                max_wm_mean_cond = max(max_wm_mean_cond, mc)
+                avg_wm_mean_cond += mc
+                avg_wm_max_eigenvalue += w[0]
+                avg_wm_mid_eigenvalue += w[1]
+                avg_wm_min_eigenvalue += w[2]
     toc = time.time()
     avg_wm_mean_cond /= num_wm_voxels
     avg_wm_max_eigenvalue /= num_wm_voxels
