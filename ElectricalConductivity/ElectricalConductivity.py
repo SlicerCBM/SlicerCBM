@@ -160,10 +160,16 @@ if args.tuch:
     voxels_with_negative_eigenvalues = []
     min_wm_mean_cond = np.inf
     max_wm_mean_cond = -np.inf
+    avg_wm_mean_cond = 0
+    avg_wm_max_eigenvalue = 0
+    avg_wm_mid_eigenvalue = 0
+    avg_wm_min_eigenvalue = 0
+    num_wm_voxels = 0
     print("Compute WM conductivity")
     D = np.zeros((3, 3))
     for i, label in enumerate(tqdm(seg_data[mask > 0])):
         if label == wm_label:
+            num_wm_voxels += 1
             # D = np.array([[D00[i], D01[i], D02[i]],
             #               [D01[i], D11[i], D12[i]],
             #               [D02[i], D12[i], D22[i]]], dtype=float)
@@ -214,16 +220,32 @@ if args.tuch:
             w, v = np.linalg.eig(C)
             if np.any(w < 0):
                 raise RuntimeError(f"Conductivity not positive semi-definite at voxel {i}")
-            # Mean conductivity
-            mc = np.sum(w) / 3.0
+            # Sort eignenvalues and eigenvectors
+            idx = w.argsort()[::-1]
+            w = w[idx]
+            v = v[:,idx]
+            mc = np.sum(w) / 3.0 # mean conductivity
             min_wm_mean_cond = min(min_wm_mean_cond, mc)
             max_wm_mean_cond = max(max_wm_mean_cond, mc)
+            avg_wm_mean_cond += mc
+            avg_wm_max_eigenvalue += w[0]
+            avg_wm_mid_eigenvalue += w[1]
+            avg_wm_min_eigenvalue += w[2]
     toc = time.time()
+    avg_wm_mean_cond /= num_wm_voxels
+    avg_wm_max_eigenvalue /= num_wm_voxels
+    avg_wm_mid_eigenvalue /= num_wm_voxels
+    avg_wm_min_eigenvalue /= num_wm_voxels
     print("Time elapsed: ", toc - tic)
+    print(f"{num_wm_voxels} voxels are white matter.")
     print(f"{len(voxels_with_negative_eigenvalues)} voxels had negative eigenvalues",
           f"(these eigenvalues were corrected to {minimum_eigenvalue})")
     print("White matter conductivity (min, max): ({}, {})".format(
         min_wm_mean_cond, max_wm_mean_cond))
+    print("White matter conductivity (avg, std): ({}, ???)".format(
+        avg_wm_mean_cond))
+    print("White matter conductivity average eigenvalues (max, mid, min): ({}, {}, {})".format(
+        avg_wm_max_eigenvalue, avg_wm_mid_eigenvalue, avg_wm_min_eigenvalue, ))
 
 for C in [C00, C01, C02, C11, C12, C22]:
     # Convert units
