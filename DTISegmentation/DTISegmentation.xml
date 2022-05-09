@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<executable>
+  <category>CBM.Segmentations</category>
+  <title>DTI Segmentation</title>
+  <description><![CDATA[Segment DTI into gray matter, white matter and CSF using fuzzy C-means clustering (FCM) algorithm.]]></description>
+  <version>0.1.0.</version>
+  <documentation-url>https://github.com/SlicerCBM/SlicerCBM/tree/master/DTISegmentation</documentation-url>
+  <license/>
+  <contributor>Benjamin Zwick</contributor>
+  <acknowledgements><![CDATA[]]></acknowledgements>
+  <parameters>
+    <label>IO</label>
+    <description><![CDATA[Input/output parameters]]></description>
+    <image type="tensor">
+      <name>inputDTI</name>
+      <label>Input DTI</label>
+      <channel>input</channel>
+      <longflag>dti</longflag>
+      <description><![CDATA[Input DTI Volume]]></description>
+    </image>
+    <image type="label">
+      <name>inputLabelmap</name>
+      <label>Input Mask</label>
+      <channel>input</channel>
+      <longflag>mask</longflag>
+      <description><![CDATA[Input Mask Labelmap]]></description>
+    </image>
+    <directory>
+      <name>outputDirectory</name>
+      <label>Output Directory</label>
+      <channel>output</channel>
+      <longflag>outdir</longflag>
+      <description><![CDATA[Output Directory]]></description>
+    </directory>
+  </parameters>
+</executable>
