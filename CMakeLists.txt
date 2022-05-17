@@ -19,6 +19,7 @@ include(${Slicer_USE_FILE})
 
 #-----------------------------------------------------------------------------
 # Extension modules
+add_subdirectory(DTISegmentation)
 add_subdirectory(ElectricalConductivity)
 add_subdirectory(MVoxMeshGenerator)
 add_subdirectory(SheetFromPoints)
