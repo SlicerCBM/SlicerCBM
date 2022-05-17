@@ -1,0 +1,325 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>Fusion2</class>
+ <widget class="qMRMLWidget" name="Fusion2">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>486</width>
+    <height>505</height>
+   </rect>
+  </property>
+  <layout class="QFormLayout" name="formLayout">
+   <item row="0" column="0">
+    <widget class="QLabel" name="parameterSetLabel">
+     <property name="text">
+      <string>Paremeter set: </string>
+     </property>
+    </widget>
+   </item>
+   <item row="0" column="1">
+    <widget class="qMRMLNodeComboBox" name="parameterNodeSelector">
+     <property name="toolTip">
+      <string>Pick node to store parameter set</string>
+     </property>
+     <property name="nodeTypes">
+      <stringlist>
+       <string>vtkMRMLScriptedModuleNode</string>
+      </stringlist>
+     </property>
+     <property name="showHidden">
+      <bool>true</bool>
+     </property>
+     <property name="baseName">
+      <string>Fusion2</string>
+     </property>
+     <property name="renameEnabled">
+      <bool>true</bool>
+     </property>
+    </widget>
+   </item>
+   <item row="1" column="0" colspan="2">
+    <widget class="ctkCollapsibleButton" name="basicCollapsibleButton">
+     <property name="text">
+      <string>Inputs</string>
+     </property>
+     <layout class="QFormLayout" name="formLayout_2">
+      <item row="4" column="0">
+       <widget class="QLabel" name="label_5">
+        <property name="text">
+         <string>Brain Volume:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="5" column="0">
+       <widget class="QLabel" name="label_6">
+        <property name="text">
+         <string>Electrode Sheet:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="6" column="0">
+       <widget class="QLabel" name="label_3">
+        <property name="text">
+         <string>White matter segment:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="1">
+       <widget class="qMRMLSegmentSelectorWidget" name="skullSelector"/>
+      </item>
+      <item row="4" column="1">
+       <widget class="qMRMLSegmentSelectorWidget" name="brainSelector"/>
+      </item>
+      <item row="6" column="1">
+       <widget class="qMRMLSegmentSelectorWidget" name="wmSelector"/>
+      </item>
+      <item row="7" column="1">
+       <widget class="qMRMLSegmentSelectorWidget" name="gmSelector"/>
+      </item>
+      <item row="7" column="0">
+       <widget class="QLabel" name="label_4">
+        <property name="text">
+         <string>Grey matter segment:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="8" column="0">
+       <widget class="QLabel" name="label_7">
+        <property name="text">
+         <string>Cerebral spinal fluid (CSF) segment:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="8" column="1">
+       <widget class="qMRMLSegmentSelectorWidget" name="csfSelector"/>
+      </item>
+      <item row="1" column="1">
+       <widget class="qMRMLSegmentSelectorWidget" name="scalpSelector"/>
+      </item>
+      <item row="1" column="0">
+       <widget class="QLabel" name="label">
+        <property name="text">
+         <string>Scalp Volume:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="0">
+       <widget class="QLabel" name="label_2">
+        <property name="text">
+         <string>Skull Volume:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="5" column="1">
+       <widget class="qMRMLSegmentSelectorWidget" name="electrodeSelector"/>
+      </item>
+      <item row="0" column="1">
+       <widget class="QComboBox" name="imgType">
+        <item>
+         <property name="text">
+          <string>Deformed </string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Undeformed</string>
+         </property>
+        </item>
+       </widget>
+      </item>
+      <item row="0" column="0">
+       <widget class="QLabel" name="label_8">
+        <property name="text">
+         <string>Image type (warped/unwarped):</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item row="6" column="0" colspan="2">
+    <widget class="QPushButton" name="applyButton">
+     <property name="enabled">
+      <bool>false</bool>
+     </property>
+     <property name="toolTip">
+      <string>Run the algorithm.</string>
+     </property>
+     <property name="text">
+      <string>Apply</string>
+     </property>
+    </widget>
+   </item>
+   <item row="7" column="0">
+    <spacer name="verticalSpacer">
+     <property name="orientation">
+      <enum>Qt::Vertical</enum>
+     </property>
+     <property name="sizeHint" stdset="0">
+      <size>
+       <width>20</width>
+       <height>40</height>
+      </size>
+     </property>
+    </spacer>
+   </item>
+  </layout>
+ </widget>
+ <customwidgets>
+  <customwidget>
+   <class>ctkCollapsibleButton</class>
+   <extends>QWidget</extends>
+   <header>ctkCollapsibleButton.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>qMRMLNodeComboBox</class>
+   <extends>QWidget</extends>
+   <header>qMRMLNodeComboBox.h</header>
+  </customwidget>
+  <customwidget>
+   <class>qMRMLWidget</class>
+   <extends>QWidget</extends>
+   <header>qMRMLWidget.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>qMRMLSegmentSelectorWidget</class>
+   <extends>qMRMLWidget</extends>
+   <header>qMRMLSegmentSelectorWidget.h</header>
+  </customwidget>
+ </customwidgets>
+ <resources/>
+ <connections>
+  <connection>
+   <sender>Fusion2</sender>
+   <signal>mrmlSceneChanged(vtkMRMLScene*)</signal>
+   <receiver>parameterNodeSelector</receiver>
+   <slot>setMRMLScene(vtkMRMLScene*)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>28</x>
+     <y>267</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>192</x>
+     <y>18</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>Fusion2</sender>
+   <signal>mrmlSceneChanged(vtkMRMLScene*)</signal>
+   <receiver>scalpSelector</receiver>
+   <slot>setMRMLScene(vtkMRMLScene*)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>156</x>
+     <y>164</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>80</x>
+     <y>233</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>Fusion2</sender>
+   <signal>mrmlSceneChanged(vtkMRMLScene*)</signal>
+   <receiver>skullSelector</receiver>
+   <slot>setMRMLScene(vtkMRMLScene*)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>242</x>
+     <y>252</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>354</x>
+     <y>135</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>Fusion2</sender>
+   <signal>mrmlSceneChanged(vtkMRMLScene*)</signal>
+   <receiver>brainSelector</receiver>
+   <slot>setMRMLScene(vtkMRMLScene*)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>242</x>
+     <y>252</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>354</x>
+     <y>187</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>Fusion2</sender>
+   <signal>mrmlSceneChanged(vtkMRMLScene*)</signal>
+   <receiver>wmSelector</receiver>
+   <slot>setMRMLScene(vtkMRMLScene*)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>242</x>
+     <y>252</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>354</x>
+     <y>262</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>Fusion2</sender>
+   <signal>mrmlSceneChanged(vtkMRMLScene*)</signal>
+   <receiver>gmSelector</receiver>
+   <slot>setMRMLScene(vtkMRMLScene*)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>242</x>
+     <y>252</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>354</x>
+     <y>308</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>Fusion2</sender>
+   <signal>mrmlSceneChanged(vtkMRMLScene*)</signal>
+   <receiver>csfSelector</receiver>
+   <slot>setMRMLScene(vtkMRMLScene*)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>242</x>
+     <y>252</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>354</x>
+     <y>354</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>Fusion2</sender>
+   <signal>mrmlSceneChanged(vtkMRMLScene*)</signal>
+   <receiver>electrodeSelector</receiver>
+   <slot>setMRMLScene(vtkMRMLScene*)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>242</x>
+     <y>252</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>354</x>
+     <y>233</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
+</ui>
