@@ -1,5 +1,5 @@
 #-----------------------------------------------------------------------------
-set(MODULE_NAME Markupstosurfacemesh)
+set(MODULE_NAME FiducialsToSurface)
 
 #-----------------------------------------------------------------------------
 set(MODULE_PYTHON_SCRIPTS

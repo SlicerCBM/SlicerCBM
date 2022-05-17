@@ -7,17 +7,17 @@ import numpy as np
 import pyvista as pv
 import pyacvd
 #
-# Markupstosurfacemesh
+# FiducialsToSurface
 #
 
-class Markupstosurfacemesh(ScriptedLoadableModule):
+class FiducialsToSurface(ScriptedLoadableModule):
   """Uses ScriptedLoadableModule base class, available at:
   https://github.com/Slicer/Slicer/blob/master/Base/Python/slicer/ScriptedLoadableModule.py
   """
 
   def __init__(self, parent):
     ScriptedLoadableModule.__init__(self, parent)
-    self.parent.title = "Markupstosurfacemesh" # TODO make this more human readable by adding spaces
+    self.parent.title = "FiducialsToSurface" # TODO make this more human readable by adding spaces
     self.parent.categories = ["Examples"]
     self.parent.dependencies = []
     self.parent.contributors = ["Saima Safdar"] # replace with "Firstname Lastname (Organization)"
@@ -32,10 +32,10 @@ and Steve Pieper, Isomics, Inc. and was partially funded by NIH grant 3P41RR0132
 """ # replace with organization, grant and thanks.
 
 #
-# MarkupstosurfacemeshWidget
+# FiducialsToSurfaceWidget
 #
 
-class MarkupstosurfacemeshWidget(ScriptedLoadableModuleWidget):
+class FiducialsToSurfaceWidget(ScriptedLoadableModuleWidget):
   """Uses ScriptedLoadableModuleWidget base class, available at:
   https://github.com/Slicer/Slicer/blob/master/Base/Python/slicer/ScriptedLoadableModule.py
   """
@@ -44,7 +44,7 @@ class MarkupstosurfacemeshWidget(ScriptedLoadableModuleWidget):
     ScriptedLoadableModuleWidget.setup(self)
 
     # Load widget from .ui file (created by Qt Designer)
-    uiWidget = slicer.util.loadUI(self.resourcePath('UI/Markupstosurfacemesh.ui'))
+    uiWidget = slicer.util.loadUI(self.resourcePath('UI/FiducialsToSurface.ui'))
     self.layout.addWidget(uiWidget)
     self.ui = slicer.util.childWidgetVariables(uiWidget)
 
@@ -69,15 +69,15 @@ class MarkupstosurfacemeshWidget(ScriptedLoadableModuleWidget):
     self.ui.applyButton.enabled = self.ui.inputSelector.currentNode() and self.ui.outputSelector.currentNode()
 
   def onApplyButton(self):
-    logic = MarkupstosurfacemeshLogic()
+    logic = FiducialsToSurfaceLogic()
     enableScreenshotsFlag = self.ui.enableScreenshotsFlagCheckBox.checked
     logic.run(self.ui.inputSelector.currentNode(), self.ui.outputSelector.currentNode(), enableScreenshotsFlag)
 
 #
-# MarkupstosurfacemeshLogic
+# FiducialsToSurfaceLogic
 #
 
-class MarkupstosurfacemeshLogic(ScriptedLoadableModuleLogic):
+class FiducialsToSurfaceLogic(ScriptedLoadableModuleLogic):
   """This class should implement all the actual
   computation done by your module.  The interface
   should be such that other python code can import
@@ -154,14 +154,14 @@ class MarkupstosurfacemeshLogic(ScriptedLoadableModuleLogic):
     
     # Capture screenshot
     if enableScreenshots:
-      self.takeScreenshot('MarkupstosurfacemeshTest-Start','MyScreenshot',-1)
+      self.takeScreenshot('FiducialsToSurfaceTest-Start','MyScreenshot',-1)
 
     logging.info('Processing completed')
 
     return True
 
 
-class MarkupstosurfacemeshTest(ScriptedLoadableModuleTest):
+class FiducialsToSurfaceTest(ScriptedLoadableModuleTest):
   """
   This is the test case for your scripted module.
   Uses ScriptedLoadableModuleTest base class, available at:
@@ -177,9 +177,9 @@ class MarkupstosurfacemeshTest(ScriptedLoadableModuleTest):
     """Run as few or as many tests as needed here.
     """
     self.setUp()
-    self.test_Markupstosurfacemesh1()
+    self.test_FiducialsToSurface1()
 
-  def test_Markupstosurfacemesh1(self):
+  def test_FiducialsToSurface1(self):
     """ Ideally you should have several levels of tests.  At the lowest level
     tests should exercise the functionality of the logic with different inputs
     (both valid and invalid).  At higher levels your tests should emulate the
@@ -204,6 +204,6 @@ class MarkupstosurfacemeshTest(ScriptedLoadableModuleTest):
     self.delayDisplay('Finished with download and loading')
 
     volumeNode = slicer.util.getNode(pattern="FA")
-    logic = MarkupstosurfacemeshLogic()
+    logic = FiducialsToSurfaceLogic()
     self.assertIsNotNone( logic.hasImageData(volumeNode) )
     self.delayDisplay('Test passed!')
