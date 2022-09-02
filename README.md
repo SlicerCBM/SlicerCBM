@@ -21,4 +21,4 @@ For major changes,
 please open an issue first to discuss what you would like to change.
 
 
-<a href="https://isml.ecm.uwa.edu.au"><img src="ISML.gif" alt="ISML Logo" style="width:42px;height:42px;"></a>
+<a href="https://isml.ecm.uwa.edu.au"><img src="ISML.gif" alt="ISML Logo" style="width:190px;height:190px;"></a>
