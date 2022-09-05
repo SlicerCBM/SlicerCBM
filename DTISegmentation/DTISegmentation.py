@@ -22,6 +22,8 @@ if SLICER:
     except:
         slicer.util.pip_install('scikit-fuzzy')
         import skfuzzy
+else:
+    import skfuzzy
 
 print(sys.argv[0])
 if SLICER: sys.stdout.flush()
