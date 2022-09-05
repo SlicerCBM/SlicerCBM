@@ -202,5 +202,13 @@ FA = np.zeros(dti.shape[1:])
 FA[mask > 0] = fa
 nrrd.write(os.path.join(outdir, "fa.nrrd"), FA, header_mask)
 
+# Mean diffusivity threshold values
+print(f"Range of MD for Parenchyma:   ({md[clusters1 != csf_cluster].min()}, {md[clusters1 != csf_cluster].max()})")
+print(f"Range of MD for CSF:          ({md[clusters1 == csf_cluster].min()}, {md[clusters1 == csf_cluster].max()})")
+
+# Fractional anisotropy threshold values
+print(f"Range of FA for gray matter:  ({fa[clusters1 != csf_cluster][clusters2 != wm_cluster].min()}, {fa[clusters1 != csf_cluster][clusters2 != wm_cluster].max()})")
+print(f"Range of FA for white matter: ({fa[clusters1 != csf_cluster][clusters2 == wm_cluster].min()}, {fa[clusters1 != csf_cluster][clusters2 == wm_cluster].max()})")
+
 TOC = time.time()
 print("Total time elapsed: ", TOC - TIC)
