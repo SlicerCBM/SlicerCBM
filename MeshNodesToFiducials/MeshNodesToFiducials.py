@@ -16,7 +16,7 @@ class MeshNodesToFiducials(ScriptedLoadableModule):
   def __init__(self, parent):
     ScriptedLoadableModule.__init__(self, parent)
     self.parent.title = "MeshNodesToFiducials" # TODO make this more human readable by adding spaces
-    self.parent.categories = ["Image as a Model"]
+    self.parent.categories = ["CBM.Biomechanical.BrainNodeSelector"]
     self.parent.dependencies = []
     self.parent.contributors = ["Saima Safdar"] # replace with "Firstname Lastname (Organization)"
     self.parent.helpText = """
