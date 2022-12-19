@@ -22,7 +22,7 @@ class TetrahedralMeshGenerator(ScriptedLoadableModule):
   def __init__(self, parent):
     ScriptedLoadableModule.__init__(self, parent)
     self.parent.title = "Tetrahedral Mesh Generator"
-    self.parent.categories = ["CBM.Mesh"]
+    self.parent.categories = ["CBM.Biomechanical.Mesh"]
     self.parent.dependencies = []  # TODO: add here list of module names that this module requires
     self.parent.contributors = ["Saima Safdar, Benjamin Zwick, Yue Yu"]
     self.parent.helpText = """
