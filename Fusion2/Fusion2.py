@@ -18,7 +18,7 @@ class Fusion2(ScriptedLoadableModule):
   def __init__(self, parent):
     ScriptedLoadableModule.__init__(self, parent)
     self.parent.title = "Fusion2"  # TODO: make this more human readable by adding spaces
-    self.parent.categories = ["combine all the tissues (wm, gm, csf, skull scalp, electrode sheet)"]  # TODO: set categories (folders where the module shows up in the module selector)
+    self.parent.categories = ["CBM.Bioelectric.HeadModel"]  # TODO: set categories (folders where the module shows up in the module selector)
     self.parent.dependencies = []  # TODO: add here list of module names that this module requires
     self.parent.contributors = ["Saima Safdar"]  # TODO: replace with "Firstname Lastname (Organization)"
     self.parent.helpText = """
