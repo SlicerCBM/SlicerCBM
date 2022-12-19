@@ -16,7 +16,7 @@ class MTLEDSimulator(ScriptedLoadableModule):
   def __init__(self, parent):
     ScriptedLoadableModule.__init__(self, parent)
     self.parent.title = "MTLEDSimulator" # TODO make this more human readable by adding spaces
-    self.parent.categories = ["Examples"]
+    self.parent.categories = ["CBM.Biomechanical.Solver"]
     self.parent.dependencies = []
     self.parent.contributors = ["saima safdar"] # replace with "Firstname Lastname (Organization)"
     self.parent.helpText = """
