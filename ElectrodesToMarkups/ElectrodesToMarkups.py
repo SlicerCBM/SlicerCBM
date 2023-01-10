@@ -22,7 +22,7 @@ class ElectrodesToMarkups(ScriptedLoadableModule):
     self.parent.contributors = ["Saima Safdar"]  # TODO: replace with "Firstname Lastname (Organization)"
     self.parent.helpText = """
 This is an example of scripted loadable module bundled in an extension.
-It performs a simple thresholding on the input volume and optionally captures a screenshot.
+It module creates the fiducials at electrode positions as identified from the binary segmented Computed tomography CT image.
 """  # TODO: update with short description of the module
     self.parent.helpText += self.getDefaultModuleDocumentationLink()  # TODO: verify that the default URL is correct or change it to the actual documentation
     self.parent.acknowledgementText = """
