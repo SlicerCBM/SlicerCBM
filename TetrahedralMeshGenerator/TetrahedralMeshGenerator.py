@@ -4,12 +4,12 @@ import logging
 import vtk, qt, ctk, slicer
 from slicer.ScriptedLoadableModule import *
 from slicer.util import VTKObservationMixin
-import gmsh_api
-import gmsh_api.gmsh as gmsh
-import gmsh
-import math
-import sys
-import meshio
+#import gmsh_api
+#import gmsh_api.gmsh as gmsh
+#import gmsh
+#import math
+#import sys
+#import meshio
 #
 # TetrahedralMeshGenerator
 #
