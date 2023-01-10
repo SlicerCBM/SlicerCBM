@@ -21,8 +21,7 @@ class CranCreator(ScriptedLoadableModule):
     self.parent.dependencies = []  # TODO: add here list of module names that this module requires
     self.parent.contributors = ["Saima Safdar"]  # TODO: replace with "Firstname Lastname (Organization)"
     # TODO: update with short description of the module and a link to online module documentation
-    self.parent.helpText = """
-This is an example of scripted loadable module bundled in an extension.
+    self.parent.helpText = """ It creates a craniotomy region using the information from pre and post MRIS
 See more information in <a href="https://github.com/organization/projectname#CranCreator">module documentation</a>.
 """
     # TODO: replace with organization, grant and thanks

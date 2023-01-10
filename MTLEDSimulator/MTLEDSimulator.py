@@ -20,13 +20,10 @@ class MTLEDSimulator(ScriptedLoadableModule):
     self.parent.dependencies = []
     self.parent.contributors = ["saima safdar"] # replace with "Firstname Lastname (Organization)"
     self.parent.helpText = """
-This is an example of scripted loadable module bundled in an extension.
-It performs a simple thresholding on the input volume and optionally captures a screenshot.
+It computes brain deformation using Meshless total lagrangian explicit dynamic algorithm MTLED.
 """
     self.parent.helpText += self.getDefaultModuleDocumentationLink()
     self.parent.acknowledgementText = """
-This file was originally developed by Jean-Christophe Fillion-Robin, Kitware Inc.
-and Steve Pieper, Isomics, Inc. and was partially funded by NIH grant 3P41RR013218-12S1.
 """ # replace with organization, grant and thanks.
 
 #
