@@ -5,9 +5,9 @@ import vtk, qt, ctk, slicer
 from slicer.ScriptedLoadableModule import *
 from slicer.util import VTKObservationMixin
 import numpy as np
-import mvloader.nrrd as mvnrrd
-import nrrd
-import meshio
+#import mvloader.nrrd as mvnrrd
+#import nrrd
+#import meshio
 
 #
 # TumorResectionAndBRainRemodelling
@@ -162,6 +162,21 @@ class TumorResectionAndBRainRemodellingWidget(ScriptedLoadableModuleWidget, VTKO
     """
     Run processing when user clicks "Apply" button.
     """
+    try:
+        import mvloader.nrrd as mvnrrd
+        import nrrd
+        import numpy as np  
+        import meshio
+    except ModuleNotFoundError as e:
+        if slicer.util.confirmOkCancelDisplay("This module requires 'nrrd, mvloader, meshio' Python package. Click OK to install."):
+            slicer.util.pip_install("git+https://github.com/spezold/mvloader.git")
+            slicer.util.pip_install("pynrrd")
+            slicer.util.pip_install("meshio")
+            import nrrd
+            import mvloader.nrrd as mvnrrd
+            import meshio
+    
+    
     try:
       self.logic.run(self.ui.tumorMask.currentNode(), self.ui.brainModel.currentNode(),self.ui.rBrainModel.currentNode(), self.ui.iNodesBefore.currentPath, self.ui.iNodesAfter.currentPath)
     except Exception as e:
