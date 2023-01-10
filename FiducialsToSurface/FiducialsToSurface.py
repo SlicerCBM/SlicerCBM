@@ -4,8 +4,8 @@ import vtk, qt, ctk, slicer
 from slicer.ScriptedLoadableModule import *
 import logging
 import numpy as np
-import pyvista as pv
-import pyacvd
+#import pyvista as pv
+#import pyacvd
 #
 # FiducialsToSurface
 #
@@ -23,12 +23,10 @@ class FiducialsToSurface(ScriptedLoadableModule):
     self.parent.contributors = ["Saima Safdar"] # replace with "Firstname Lastname (Organization)"
     self.parent.helpText = """
 This is an example of scripted loadable module bundled in an extension.
-It performs a simple thresholding on the input volume and optionally captures a screenshot.
+It creates a surface utilising fiducials as cloud of points.
 """
     self.parent.helpText += self.getDefaultModuleDocumentationLink()
     self.parent.acknowledgementText = """
-This file was originally developed by Jean-Christophe Fillion-Robin, Kitware Inc.
-and Steve Pieper, Isomics, Inc. and was partially funded by NIH grant 3P41RR013218-12S1.
 """ # replace with organization, grant and thanks.
 
 #
@@ -69,9 +67,26 @@ class FiducialsToSurfaceWidget(ScriptedLoadableModuleWidget):
     self.ui.applyButton.enabled = self.ui.inputSelector.currentNode() and self.ui.outputSelector.currentNode()
 
   def onApplyButton(self):
+    try:
+       import pyacvd
+       import pyvista as pv 
+    except ModuleNotFoundError as e:
+        if slicer.util.confirmOkCancelDisplay("This module requires 'pyacvd, pyvista' Python package. Click OK to install."):
+            slicer.util.pip_install("pyacvd")
+            slicer.util.pip_install("pyvista")
+            #import tensorflow
+            import pyacvd
+            import pyvista as pv
+           
+            
     logic = FiducialsToSurfaceLogic()
     enableScreenshotsFlag = self.ui.enableScreenshotsFlagCheckBox.checked
+    try:
     logic.run(self.ui.inputSelector.currentNode(), self.ui.outputSelector.currentNode(), enableScreenshotsFlag)
+    except Exception as e:
+      slicer.util.errorDisplay("Failed to compute results: "+str(e))
+      import traceback
+      traceback.print_exc()
 
 #
 # FiducialsToSurfaceLogic
