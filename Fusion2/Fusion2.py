@@ -4,7 +4,6 @@ import logging
 import vtk, qt, ctk, slicer
 from slicer.ScriptedLoadableModule import *
 from slicer.util import VTKObservationMixin
-import os
 import nrrd
 #
 # Fusion2
