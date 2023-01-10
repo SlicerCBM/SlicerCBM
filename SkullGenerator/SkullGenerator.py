@@ -4,7 +4,7 @@ import logging
 import vtk, qt, ctk, slicer
 from slicer.ScriptedLoadableModule import *
 from slicer.util import VTKObservationMixin
-import meshio
+
 import numpy as np
 #
 # SkullGenerator
@@ -181,6 +181,13 @@ class SkullGeneratorWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     """
     Run processing when user clicks "Apply" button.
     """
+    try:
+        import slicer.util
+        import meshio
+    except Exception as e1:
+        slicer.util.pip_install('meshio')
+        import meshio
+        
     try:
       self.logic.run(self.ui.skullModel.currentNode(), self.ui.brainModel.currentNode(), self.ui.contactsFile.currentPath, self.ui.newSkullFile.currentPath, self.ui.tumorCheck.checked)
     except Exception as e:
