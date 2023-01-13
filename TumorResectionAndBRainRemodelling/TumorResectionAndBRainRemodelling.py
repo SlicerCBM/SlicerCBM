@@ -5,9 +5,9 @@ import vtk, qt, ctk, slicer
 from slicer.ScriptedLoadableModule import *
 from slicer.util import VTKObservationMixin
 import numpy as np
-import mvloader.nrrd as mvnrrd
-import nrrd
-import meshio
+#import mvloader.nrrd as mvnrrd
+#import nrrd
+#import meshio
 
 #
 # TumorResectionAndBRainRemodelling
@@ -21,17 +21,16 @@ class TumorResectionAndBRainRemodelling(ScriptedLoadableModule):
   def __init__(self, parent):
     ScriptedLoadableModule.__init__(self, parent)
     self.parent.title = "TumorResectionAndBRainRemodelling"  # TODO: make this more human readable by adding spaces
-    self.parent.categories = ["CBM.Biomechanical"]  # TODO: set categories (folders where the module shows up in the module selector)
+    self.parent.categories = ["CBM.Biomechanical.TumourResectionAndBrainRemodelling"]  # TODO: set categories (folders where the module shows up in the module selector)
     self.parent.dependencies = []  # TODO: add here list of module names that this module requires
     self.parent.contributors = ["Saima Safdar"]  # TODO: replace with "Firstname Lastname (Organization)"
     self.parent.helpText = """
 This is an example of scripted loadable module bundled in an extension.
-It performs a simple thresholding on the input volume and optionally captures a screenshot.
+It resects the tumour based on the provided mask and generates a tetrahedral brain model without tumour.
 """  # TODO: update with short description of the module
     self.parent.helpText += self.getDefaultModuleDocumentationLink()  # TODO: verify that the default URL is correct or change it to the actual documentation
     self.parent.acknowledgementText = """
-This file was originally developed by Jean-Christophe Fillion-Robin, Kitware Inc.
-and Steve Pieper, Isomics, Inc. and was partially funded by NIH grant 3P41RR013218-12S1.
+
 """  # TODO: replace with organization, grant and thanks.
 
 #
@@ -162,6 +161,21 @@ class TumorResectionAndBRainRemodellingWidget(ScriptedLoadableModuleWidget, VTKO
     """
     Run processing when user clicks "Apply" button.
     """
+    try:
+        import mvloader.nrrd as mvnrrd
+        import nrrd
+        import numpy as np  
+        import meshio
+    except ModuleNotFoundError as e:
+        if slicer.util.confirmOkCancelDisplay("This module requires 'nrrd, mvloader, meshio' Python package. Click OK to install."):
+            slicer.util.pip_install("git+https://github.com/spezold/mvloader.git")
+            slicer.util.pip_install("pynrrd")
+            slicer.util.pip_install("meshio")
+            import nrrd
+            import mvloader.nrrd as mvnrrd
+            import meshio
+    
+    
     try:
       self.logic.run(self.ui.tumorMask.currentNode(), self.ui.brainModel.currentNode(),self.ui.rBrainModel.currentNode(), self.ui.iNodesBefore.currentPath, self.ui.iNodesAfter.currentPath)
     except Exception as e:

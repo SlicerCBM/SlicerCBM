@@ -4,12 +4,12 @@ import logging
 import vtk, qt, ctk, slicer
 from slicer.ScriptedLoadableModule import *
 from slicer.util import VTKObservationMixin
-import gmsh_api
-import gmsh_api.gmsh as gmsh
-import gmsh
-import math
-import sys
-import meshio
+#import gmsh_api
+#import gmsh_api.gmsh as gmsh
+#import gmsh
+#import math
+#import sys
+#import meshio
 #
 # TetrahedralMeshGenerator
 #
@@ -150,7 +150,30 @@ class TetrahedralMeshGeneratorWidget(ScriptedLoadableModuleWidget, VTKObservatio
   def onApplyButton(self):
     """
     Run processing when user clicks "Apply" button.
+    
     """
+    try:
+        import gmsh_api
+        import gmsh_api.gmsh as gmsh
+        import gmsh
+        import math
+        import sys
+        import meshio
+        #import skfuzzy
+    except:
+        slicer.util.pip_install('math')
+        slicer.util.pip_install('gmsh_api')
+        slicer.util.pip_install('gmsh')
+        slicer.util.pip_install('meshio')
+        import gmsh_api
+        import gmsh_api.gmsh as gmsh
+        import gmsh
+        import math
+        import sys
+        import meshio
+        #slicer.util.pip_install('scikit-fuzzy')
+        #import skfuzzy
+    
     try:
       self.logic.run(self.ui.inputFile.currentPath, self.ui.outputSelector.currentNode(),self.ui.outputFile.currentPath, self.ui.meshType.value)
     except Exception as e:
