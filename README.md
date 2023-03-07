@@ -14,6 +14,57 @@ SlicerCBM is under development at the
 at
 [The University of Western Australia](https://www.uwa.edu.au).
 
+## Modules
+
+The extension currently includes the following features:
+
+- Segmentation
+  - DTISegmentation: segment DTI into gray matter (GM), white matter (WM) and cerebrospinal fluid (CSF) tissue classes using fuzzy C-means clustering (FCM) algorithm
+  - Fusion
+  - Fusion2
+
+- Geometry
+  - CranCreator
+  - FiducialsToSurface
+  - MeshNodesToFiducials
+  - SheetFromPoints
+  - SkullGenerator
+  - SurfaceTriangulation
+
+- Mesh/Grid
+  - MVoxMeshGenerator: create structured hexahedral grid using MVox
+  - TetrahedralMeshGenerator: create tetrahedral grid using Gmsh
+  - TumorResectionAndBRainRemodelling: create tetrahedral grid of brain with tumor cavity using Gmsh
+
+- Property
+  - BrainMaterialProperties
+  - ElectricalConductivity: assign electrical conductivity to an image volume
+  - FuzzyClassification
+
+- BCs/Load
+  - BrainMeshSurfaceCellsSelection
+  - BrainSurfaceNeighbouringCellsSelection
+  - ElectrodesToMarkups
+  - FiducialToModelDistance
+  - NodeSelector
+
+- Solver
+  - EEGSolver
+  - MTLEDSimulator
+
+- Visualization
+  - Visualisation
+
+## External software
+
+SlicerCBM depends on the following software:
+
+- [ExplicitSim](https://bitbucket.org/explicitsim/explicitsim) (GPL)
+- [Gmsh](https://gmsh.info) (GPL)
+- [MVox Mesh Voxelizer](https://github.com/benzwick/mvox) (BSD-3-Clause license)
+- [PyACVD](https://github.com/pyvista/pyacvd) (MIT license)
+- [scikit-fuzzy Fuzzy Logic SciKit (Toolkit for SciPy)](https://github.com/scikit-fuzzy/scikit-fuzzy)
+
 ## Contributing
 
 Pull requests are welcome.
