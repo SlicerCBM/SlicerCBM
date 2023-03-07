@@ -14,9 +14,9 @@ SlicerCBM is under development at the
 at
 [The University of Western Australia](https://www.uwa.edu.au).
 
-## Modules
+## Features
 
-The extension currently includes the following features:
+The SlicerCBM extension currently includes the following features implemented as 3D Slicer modules:
 
 - Segmentation
   - DTISegmentation: segment DTI into gray matter (GM), white matter (WM) and cerebrospinal fluid (CSF) tissue classes using fuzzy C-means clustering (FCM) algorithm
