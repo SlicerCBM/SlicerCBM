@@ -233,7 +233,7 @@ class SurfaceTriangulationLogic(ScriptedLoadableModuleLogic):
     clus = pyacvd.Clustering(pd)
     
     print("do cluster")
-    #clus.subdivide(3)
+    clus.subdivide(3)
     
     
     
