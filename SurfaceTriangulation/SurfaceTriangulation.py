@@ -47,6 +47,7 @@ class SurfaceTriangulationWidget(ScriptedLoadableModuleWidget, VTKObservationMix
             slicer.util.pip_install("pyacvd")
             slicer.util.pip_install("pyvista")
             slicer.util.pip_install("meshio")
+            slicer.util.pip_install("matplotlib")
             #slicer.util.pip_install("scikit-image")
             #import tensorflow
             import pyacvd
