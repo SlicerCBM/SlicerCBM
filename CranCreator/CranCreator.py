@@ -17,7 +17,7 @@ class CranCreator(ScriptedLoadableModule):
   def __init__(self, parent):
     ScriptedLoadableModule.__init__(self, parent)
     self.parent.title = "CranCreator"  # TODO: make this more human readable by adding spaces
-    self.parent.categories = ["CBM.Biomechanical.CranCreator"]  # TODO: set categories (folders where the module shows up in the module selector)
+    self.parent.categories = ["CBM.Biomechanical"]  # TODO: set categories (folders where the module shows up in the module selector)
     self.parent.dependencies = []  # TODO: add here list of module names that this module requires
     self.parent.contributors = ["Saima Safdar"]  # TODO: replace with "Firstname Lastname (Organization)"
     # TODO: update with short description of the module and a link to online module documentation
@@ -238,11 +238,11 @@ class CranCreatorWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     self.ui.invertOutputCheckBox.checked = (self._parameterNode.GetParameter("Invert") == "true")
 
     # Update buttons states and tooltips
-    if self._parameterNode.GetNodeReference("InputVolume") and self._parameterNode.GetNodeReference("OutputVolume"):
-      self.ui.applyButton.toolTip = "Compute output volume"
+    if self._parameterNode.GetNodeReference("InputVolume"):#and self._parameterNode.GetNodeReference("OutputVolume"):
+      self.ui.applyButton.toolTip = "Compute threshold"
       self.ui.applyButton.enabled = True
     else:
-      self.ui.applyButton.toolTip = "Select input and output volume nodes"
+      self.ui.applyButton.toolTip = "Select input volume node"
       self.ui.applyButton.enabled = False
 
     # All the GUI updates are done
@@ -289,12 +289,12 @@ class CranCreatorWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     try:
 
       # Compute output
-      self.logic.process(self.ui.inputSelector.currentNode(), self.ui.invertOutputCheckBox.checked)
+      self.logic.process(self.ui.inputSelector.currentNode())#, self.ui.invertOutputCheckBox.checked)
 
       # Compute inverted output (if needed)
-      if self.ui.invertedOutputSelector.currentNode():
+      #if self.ui.invertedOutputSelector.currentNode():
         # If additional output volume is selected then result with inverted threshold is written there
-        self.logic.process(self.ui.inputSelector.currentNode(), not self.ui.invertOutputCheckBox.checked, showResult=False)
+        #self.logic.process(self.ui.inputSelector.currentNode(), not self.ui.invertOutputCheckBox.checked, showResult=False)
 
     except Exception as e:
       slicer.util.errorDisplay("Failed to compute results: "+str(e))
@@ -391,7 +391,7 @@ class CranCreatorLogic(ScriptedLoadableModuleLogic):
     effect.self().onApply()
  
 
-  def process(self, inputVolume, invert=False, showResult=True):
+  def process(self, inputVolume):
     """
     Run the processing algorithm.
     Can be used without GUI widget.
@@ -402,7 +402,7 @@ class CranCreatorLogic(ScriptedLoadableModuleLogic):
     :param showResult: show output volume in slice viewers
     """
 
-    if not inputVolume or not outputVolume:
+    if not inputVolume:#or not outputVolume:
       raise ValueError("Input or output volume is invalid")
 
     import time
@@ -470,7 +470,7 @@ class CranCreatorLogic(ScriptedLoadableModuleLogic):
     #effect.setParameter("REGION_LARGEST_CAVITY", "largestCavity")
     effect.setParameter("carveHolesInOuterSurface", True)
     effect.setParameter("carveHolesInOuterSurfaceDiameter", 10)
-    effect.setParameter("smoothingFactor", 0.3)
+    effect.setParameter("smoothingFactor", 0.5)
     effect.setParameter("shrinkwrapIterations", 9)
     effect.setParameter("outputType", "segment")
     #effect.setParameter("outputModelNode", segmentName)
@@ -478,13 +478,13 @@ class CranCreatorLogic(ScriptedLoadableModuleLogic):
     
     
     #create a new method to subtract one segment from another
-    segmentEditorWidget.setActiveEffectByName("Logical operators")
-    effect = segmentEditorWidget.activeEffect()
-    effect.setParameter("Operation", "SUBTRACT")
-    effect.setParameter("ModifierSegmentID",wmSelector) 
-    segmentEditorWidget.setCurrentSegmentID(brainSelector)
-    effect.self().onApply()
-     #segmentEditorNode.SetOverwriteMode(slicer.vtkMRMLSegmentEditorNode.OverwriteNone)
+    # segmentEditorWidget.setActiveEffectByName("Logical operators")
+    # effect = segmentEditorWidget.activeEffect()
+    # effect.setParameter("Operation", "SUBTRACT")
+    # effect.setParameter("ModifierSegmentID",wmSelector) 
+    # segmentEditorWidget.setCurrentSegmentID(brainSelector)
+    # effect.self().onApply()
+    #segmentEditorNode.SetOverwriteMode(slicer.vtkMRMLSegmentEditorNode.OverwriteNone)
     #set smoothing factor for the 3d view
     # Create Closed Surface Representation and set the smoothing of the closed surface representation
     # segmentationNode.GetSegmentation().SetConversionParameter("Oversampling factor", "1.5")
