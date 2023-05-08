@@ -19,7 +19,7 @@ at
 The SlicerCBM extension currently includes the following features implemented as 3D Slicer modules:
 
 - Segmentation
-  - DTISegmentation: segment DTI into gray matter (GM), white matter (WM) and cerebrospinal fluid (CSF) tissue classes using fuzzy C-means clustering (FCM) algorithm
+  - DTISegmentation: Segment diffusion tensor image (DTI) into gray matter (GM), white matter (WM) and cerebrospinal fluid (CSF) tissue classes using fuzzy C-means clustering (FCM) algorithm.
   - Fusion
   - Fusion2
 
@@ -29,17 +29,17 @@ The SlicerCBM extension currently includes the following features implemented as
   - MeshNodesToFiducials
   - SheetFromPoints
   - SkullGenerator
-  - SurfaceTriangulation
+  - SurfaceTriangulation (deprecated): Create uniform triangulation of 3D surface model using PyACVD. This module is deprecated. Please use 3D Slicer's built-in Surface Toolbox instead.
 
 - Mesh/Grid
-  - MVoxMeshGenerator: create structured hexahedral grid using MVox
-  - TetrahedralMeshGenerator (deprecated): create tetrahedral grid using Gmsh
-  - ComputationalGridGenerator (todo): create tetrahedral grid using Gmsh
-  - TumorResectionAndBRainRemodelling: create tetrahedral grid of brain with tumor cavity using Gmsh
+  - MVoxMeshGenerator: Create structured hexahedral grid using MVox.
+  - TetrahedralMeshGenerator (deprecated): Create tetrahedral grid using Gmsh. This module is deprecated and will be removed. Please use the ComputationalGridGenerator module instead.
+  - ComputationalGridGenerator (todo): Create tetrahedral grid using Gmsh.
+  - TumorResectionAndBRainRemodelling: Create tetrahedral grid of brain with tumor cavity using Gmsh.
 
 - Property
   - BrainMaterialProperties
-  - ElectricalConductivity: assign electrical conductivity to an image volume
+  - ElectricalConductivity: Assign electrical conductivity to an image volume.
   - FuzzyClassification
 
 - BCs/Load
