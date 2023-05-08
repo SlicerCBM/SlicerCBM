@@ -33,7 +33,8 @@ The SlicerCBM extension currently includes the following features implemented as
 
 - Mesh/Grid
   - MVoxMeshGenerator: create structured hexahedral grid using MVox
-  - TetrahedralMeshGenerator: create tetrahedral grid using Gmsh
+  - TetrahedralMeshGenerator (deprecated): create tetrahedral grid using Gmsh
+  - ComputationalGridGenerator (todo): create tetrahedral grid using Gmsh
   - TumorResectionAndBRainRemodelling: create tetrahedral grid of brain with tumor cavity using Gmsh
 
 - Property
@@ -49,7 +50,7 @@ The SlicerCBM extension currently includes the following features implemented as
   - NodeSelector
 
 - Solver
-  - EEGSolver
+  - EEGSolver (todo)
   - MTLEDSimulator
 
 - Visualization
