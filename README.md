@@ -8,50 +8,51 @@ is an extension for
 that provides tools for creating and solving
 computational models of biophysical systems and processes
 with a focus on clinical and biomedical applications.
+Features include grid generation, assignment of material properties and boundary conditions, and solvers for biomechanical modeling and biomechanics-based non-rigid image registration.
 
 SlicerCBM is under development at the
 [Intelligent Systems for Medicine Lab](https://isml.ecm.uwa.edu.au)
 at
 [The University of Western Australia](https://www.uwa.edu.au).
 
-## Features
+## Modules
 
 The SlicerCBM extension currently includes the following features implemented as 3D Slicer modules:
 
 - Segmentation
-  - DTISegmentation: Segment diffusion tensor image (DTI) into gray matter (GM), white matter (WM) and cerebrospinal fluid (CSF) tissue classes using fuzzy C-means clustering (FCM) algorithm.
+  - DTI Segmentation: Segment diffusion tensor image (DTI) into gray matter (GM), white matter (WM) and cerebrospinal fluid (CSF) tissue classes using fuzzy C-means clustering (FCM) algorithm.
   - Fusion
   - Fusion2
 
 - Geometry
-  - CranCreator
-  - FiducialsToSurface
-  - MeshNodesToFiducials
-  - SheetFromPoints
-  - SkullGenerator
-  - SurfaceTriangulation (deprecated): Create uniform triangulation of 3D surface model using PyACVD. This module is deprecated. Please use 3D Slicer's built-in Surface Toolbox instead.
+  - Cran Creator
+  - Fiducials To Surface
+  - MeshNodes To Fiducials
+  - Sheet From Points
+  - Skull Generator
+  - Surface Triangulation (deprecated): Create uniform triangulation of 3D surface model using PyACVD. This module is deprecated. Please use 3D Slicer's built-in Surface Toolbox instead.
 
 - Mesh/Grid
-  - MVoxMeshGenerator: Create structured hexahedral grid using MVox.
-  - TetrahedralMeshGenerator (deprecated): Create tetrahedral grid using Gmsh. This module is deprecated and will be removed. Please use the ComputationalGridGenerator module instead.
-  - ComputationalGridGenerator (todo): Create tetrahedral grid using Gmsh.
-  - TumorResectionAndBRainRemodelling: Create tetrahedral grid of brain with tumor cavity using Gmsh.
+  - MVox Mesh Generator: Create structured hexahedral grid using MVox.
+  - Tetrahedral Mesh Generator (deprecated): Create tetrahedral grid using Gmsh. This module is deprecated and will be removed. Please use the ComputationalGridGenerator module instead.
+  - Computational Grid Generator (todo): Create tetrahedral grid using Gmsh.
+  - Tumor Resection And BRain Remodelling: Create tetrahedral grid of brain with tumor cavity using Gmsh.
 
 - Property
-  - BrainMaterialProperties
-  - ElectricalConductivity: Assign electrical conductivity to an image volume.
-  - FuzzyClassification
+  - Brain Material Properties
+  - Electrical Conductivity: Assign electrical conductivity to an image volume.
+  - Fuzzy Classification
 
 - BCs/Load
-  - BrainMeshSurfaceCellsSelection
-  - BrainSurfaceNeighbouringCellsSelection
-  - ElectrodesToMarkups
-  - FiducialToModelDistance
-  - NodeSelector
+  - Brain Mesh Surface Cells Selection
+  - Brain Surface Neighbouring Cells Selection
+  - Electrodes To Markups
+  - Fiducial To Model Distance
+  - Node Selector
 
 - Solver
-  - EEGSolver (todo)
-  - MTLEDSimulator
+  - EEG Solver (todo)
+  - MTLED Simulator
 
 - Visualization
   - Visualisation
