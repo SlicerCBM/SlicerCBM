@@ -161,10 +161,10 @@ class TetrahedralMeshGeneratorWidget(ScriptedLoadableModuleWidget, VTKObservatio
         import meshio
         #import skfuzzy
     except:
-        slicer.util.pip_install('math')
-        slicer.util.pip_install('gmsh_api')
-        slicer.util.pip_install('gmsh')
-        slicer.util.pip_install('meshio')
+        slicer.util.pip_install("python-math")
+        slicer.util.pip_install("gmsh_api")
+        slicer.util.pip_install("gmsh")
+        slicer.util.pip_install("meshio")
         import gmsh_api
         import gmsh_api.gmsh as gmsh
         import gmsh
