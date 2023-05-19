@@ -82,7 +82,7 @@ class FiducialsToSurfaceWidget(ScriptedLoadableModuleWidget):
     logic = FiducialsToSurfaceLogic()
     enableScreenshotsFlag = self.ui.enableScreenshotsFlagCheckBox.checked
     try:
-    logic.run(self.ui.inputSelector.currentNode(), self.ui.outputSelector.currentNode(), enableScreenshotsFlag)
+      logic.run(self.ui.inputSelector.currentNode(), self.ui.outputSelector.currentNode(), enableScreenshotsFlag)
     except Exception as e:
       slicer.util.errorDisplay("Failed to compute results: "+str(e))
       import traceback
