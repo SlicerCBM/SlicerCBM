@@ -57,6 +57,42 @@ The SlicerCBM extension currently includes the following features implemented as
 - Visualization
   - Visualisation
 
+### Deprecated Modules
+
+The following modules are no longer actively developed
+or automatically loaded when installing SlicerCBM,
+but may be useful for some applications:
+
+- Mesh Nodes To Fiducials (TODO) (see [#51](https://github.com/SlicerCBM/SlicerCBM/issues/51))
+- Tetrahedral Mesh Generator (TODO)
+
+## Installation
+
+Please note that the SlicerCBM extension for 3D Slicer
+is currently supported on Linux and macOS operating systems only.
+
+Some of the SlicerCBM modules require the following external dependencies to be installed.
+
+### Gmsh
+
+[Gmsh](https://gmsh.info) should be installed automatically when it is required by one of the SlicerCBM modules.
+
+Due to GCC C++ ABI incompatibility between Gmsh and 3D Slicer,
+Gmsh cannot be installed automatically within 3D Slicer using the `pip_install` command
+(see [#41](https://github.com/SlicerCBM/SlicerCBM/issues/41)).
+To install [Gmsh](https://gmsh.info) on Linux please see this
+[workaround](https://github.com/SlicerCBM/SlicerCBM/issues/41#issuecomment-1553212336).
+
+### MVox Mesh Voxelizer
+
+To install [MVox Mesh Voxelizer](https://github.com/benzwick/mvox)
+please refer to its [Installation Guide](https://github.com/benzwick/mvox#installing).
+
+### ExplicitSim
+
+To install [ExplicitSim](https://bitbucket.org/explicitsim/explicitsim)
+please refer to its [Installation Guide](https://bitbucket.org/explicitsim/explicitsim/src/master/INSTALL.md).
+
 ## External software
 
 SlicerCBM depends on the following software:
