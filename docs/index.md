@@ -7,7 +7,9 @@ SlicerCBM is an extension for 3D Slicer that provides tools for creating and sol
 SlicerCBM is under development at the Intelligent Systems for Medicine Lab at The University of Western Australia.
 
 ```{toctree}
-:maxdepth: 2
+:maxdepth: 1
+:hidden:
+
+Tutorial <tutorial/index>
 
 ```
-
