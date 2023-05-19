@@ -7,8 +7,8 @@
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
 project = "SlicerCBM"
-copyright = "2023, Intelligent Systems for Medicine Laboratory (ISML)"
-author = "Intelligent Systems for Medicine Laboratory (ISML)"
+copyright = "2023, The SlicerCBM developers"
+author = "The SlicerCBM developers"
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
