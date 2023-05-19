@@ -11,6 +11,3 @@ SlicerCBM is under development at the Intelligent Systems for Medicine Lab at Th
 
 ```
 
-* {ref}`genindex`
-* {ref}`modindex`
-* {ref}`search`
