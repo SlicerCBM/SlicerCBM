@@ -28,3 +28,5 @@ html_static_path = ["_static"]
 html_title = "SlicerCBM"
 
 html_css_files = ["custom.css"]
+
+html_sidebars = {"**": ["sidebar-nav-bs"]}
