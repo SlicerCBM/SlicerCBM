@@ -25,6 +25,6 @@ exclude_patterns = ["_build", "Thumbs.db", ".DS_Store"]
 html_theme = "pydata_sphinx_theme"
 html_static_path = ["_static"]
 
-html_sidebars = {"**": ["sidebar-nav-bs", "sidebar-ethical-ads"]}
-
 html_title = "SlicerCBM"
+
+html_css_files = ["custom.css"]
