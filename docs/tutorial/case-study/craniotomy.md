@@ -29,7 +29,7 @@ reference="fig:cran"}). The steps are as follows:
 8.  Hit "Apply" to get the craniotomy region.
 
 ![Patient-specific craniotomy region model
-triangulation.](./figs/cran_2dmodel.png){#fig:cran_2dmodel
+triangulation.](./figs/craniotomy/cran_2dmodel.jpg){#fig:cran_2dmodel
 width="\\textwidth"}
 
 Generate the surface model for this craniotomy region using "Model
@@ -41,22 +41,22 @@ reference="fig:cran_2dmodel"}).
 
 ![NodeSelector module within 3D Slicer along with patient-specific brain
 model and craniotomy reference geometry for selecting nodes under
-craniotomy on brain surface.](./figs/cran_2dmodel_2.png){#fig:node_sel
+craniotomy on brain surface.](./figs/craniotomy/cran_2dmodel_2.jpg){#fig:node_sel
 width="\\textwidth"}
 
 ![Patient-specific brain model with selected loaded nodes under
-craniotomy.](./figs/load_node.png){#fig:node_sel2 width="\\textwidth"}
+craniotomy.](./figs/craniotomy/load_node.jpg){#fig:node_sel2 width="\\textwidth"}
 
 ![Patient-specific brain model with selected nodes under craniotomy
 (highlighted red region) in 3D window along with showing nodes (red
 dots) in axial, sagittal and coronal view. Yellow outline around brain
 in axial, sagittal and coronal view shows the boundary of the resulting
 3D patient-specific brain
-geometry.](./figs/load_node2.png){#fig:node_sel3 width="\\textwidth"}
+geometry.](./figs/craniotomy/load_node2.jpg){#fig:node_sel3 width="\\textwidth"}
 
 ![NodeSelector module outcome along with 3D brain model and 3D
 craniotomy model in 3D window within 3D Slicer.
-](./figs/load_node3.png){#fig:node_sel4 width="\\textwidth"}
+](./figs/craniotomy/load_node3.jpg){#fig:node_sel4 width="\\textwidth"}
 
 Use the "NodeSelector" to select the brain surface nodes under
 craniotomy region (see Fig. [1.21](#fig:node_sel){reference-type="ref"
@@ -84,5 +84,5 @@ Fig. [1.22](#fig:node_sel2){reference-type="ref"
 reference="fig:node_sel2"}.
 
 ![ElectrodesToMarkups module for selecting electrodes within 3D Slicer.
-](./figs/electrode.png){#fig:electrode width="\\textwidth"}
+](./figs/craniotomy/electrode.png){#fig:electrode width="\\textwidth"}
 

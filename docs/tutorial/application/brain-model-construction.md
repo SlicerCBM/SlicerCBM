@@ -47,7 +47,7 @@ The steps are as follows:
 6.  Hit "Apply"
 
 ![Rigid registration results of pre-operative MRI to intra-operative CT
-within 3D Slicer.](./figs/rigid_eeg.png){#fig:rigid width="\\textwidth"}
+within 3D Slicer.](./figs/rigid_eeg.jpg){#fig:rigid width="\\textwidth"}
 
 In case of electrode placement-induced brain shift, we rigidly
 registered the pre-operative MRI to intra-operative CT (see

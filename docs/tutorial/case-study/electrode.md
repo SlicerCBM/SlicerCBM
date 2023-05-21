@@ -29,7 +29,7 @@ following steps:
 !["fiducialtomodeldistance" module for selecting projected electrode
 locations on an undeformed brain surface with reference to original
 electrode locations within 3D Slicer.
-](./figs/electrode_2.png){#fig:electrode_2 width="\\textwidth"}
+](./figs/electrode/electrode_2.png){#fig:electrode_2 width="\\textwidth"}
 
 After you get the fiducials (red dots = identified original electrode
 locations), we use these to identify the projected electrode locations
@@ -54,7 +54,7 @@ follows:
 
 ![\"Markupstosurfacemesh\" module for constructing an electrode sheet
 model using projected electrode locations within 3D Slicer.
-](./figs/electrode_3.png){#fig:electrode_3 width="\\textwidth"}
+](./figs/electrode/electrode_3.png){#fig:electrode_3 width="\\textwidth"}
 
 After getting the projected electrode locations, we construct an
 electrode sheet model using the information of the locations of the
@@ -76,7 +76,7 @@ reference="fig:electrode_3"}). The steps are as follows:
 
 ![\"SurfaceTriangulation\" module for uniform triangulation of the
 electrode sheet model within 3D Slicer.
-](./figs/electrode_4.png){#fig:electrode_4 width="\\textwidth"}
+](./figs/electrode/electrode_4.png){#fig:electrode_4 width="\\textwidth"}
 
 After getting the electrode sheet surface model, we do the uniform
 triangulation of the electrode sheet surface by using the
@@ -96,7 +96,7 @@ reference="fig:electrode_4"}). The steps are as follows:
 
 ![\"NodeSelector\" module for selecting nodes on undeformed brain
 surface under electrode sheet model within 3D Slicer.
-](./figs/electrode_5.png){#fig:electrode_5 width="\\textwidth"}
+](./figs/electrode/electrode_5.png){#fig:electrode_5 width="\\textwidth"}
 
 After constructing a triangulated electrode sheet model, we use it to
 select the underlying brain cells and then from there we select the
@@ -127,14 +127,14 @@ corresponding brain nodes (loaded nodes). The steps are as follows:
 using original electrode positions and projected electrode positions
 within 3D Slicer. Red dots represents the transformed brain nodes.
 Yellow lines represents electrode sheet surface on a deformed and
-undeformed brain geometry. ](./figs/electrode_6.png){#fig:electrode_6
+undeformed brain geometry. ](./figs/electrode/electrode_6.png){#fig:electrode_6
 width="\\textwidth"}
 
 ![Displacement loading calculation based on undeformed and deformed
 brain surface nodes (see
 Fig. [\[fig:electrodes_8\]](#fig:electrodes_8){reference-type="ref"
 reference="fig:electrodes_8"})
-](./figs/electrode_7.png){#fig:electrode_7 width="\\textwidth"}
+](./figs/electrode/electrode_7.png){#fig:electrode_7 width="\\textwidth"}
 
 We then used the original electrode locations and projected electrode
 locations to calculate a transform using scattered transform. We use
@@ -172,7 +172,7 @@ reference="fig:electrode_8"}).
 
 ![Undeformed brain surface nodes (blue) and deformed brain surface nodes
 (red) after applying the scattered transform.
-](./figs/electrode_8.png){#fig:electrode_8 width="\\textwidth"}
+](./figs/electrode/electrode_8.png){#fig:electrode_8 width="\\textwidth"}
 
 In case of non-rectangular electrode grid, the selection of displaced
 nodes is done using the \"BrainMeshSurfaceCellsSelection\" (see
@@ -183,31 +183,7 @@ reference="fig:neighbourCells"})
 \"BrainSurfaceNeighbouringCellsSelection\" modules.
 
 ![\"BrainMeshSurfaceCellsSelection\" module within 3D Slicer.
-](./figs/brainCells.png){#fig:brainCells width="\\textwidth"}
+](./figs/electrode/brainCells.png){#fig:brainCells width="\\textwidth"}
 
 ![\"BrainSurfaceNeighbouringCellsSelection\" module within 3D Slicer.
-](./figs/neighbourCells.png){#fig:neighbourCells width="\\textwidth"}
-
-Case Study: Tumour resection-induced brain shift
-
-The steps are as follows:
-
-1\) Select "General Registration (BRAINS)" to register the pre-operative
-to intra-operative MRI image. 2) Define the gravity direction units. 3)
-Select the "TetrahedralMeshGenerator", which is used to construct the
-patient-specific geometry conforming tetrahedral integration grid. 4)
-Select "FuzzyClassification", which is used to classify the tissues into
-different classes (brain parenchyma, ventricles, tumour) for assigning
-material properties. 5) Select "MTLEDSimulator" to generate the
-integration points. 6) Select "MaterialProperties" to assign material
-properties to integration points using Ogden model. 7) Select
-"MTLEDSimulator" to compute the reaction forces between tumour and
-surrounding tissues. 8) Generate the loading file from results of step
-5. 9) Reconstruct brain model with tumour cavity and generate a new
-biomechanical model file for "MTLEDSimulator" 10) Repeat step 5 and 6 to
-generate integration points with tumour cavity and assign material
-properties. 11) Select "MTLEDSimulator" to compute brain displacement
-after tumour resection. 12) Extract undeformed and deformed nodal
-coordinates from the results of step 11. 13) Select "Scattered
-Transform" to generate B-Spline transform for warping the pre-operative
-MRI.
+](./figs/electrode/neighbourCells.png){#fig:neighbourCells width="\\textwidth"}
