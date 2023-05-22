@@ -4,9 +4,6 @@ import logging
 import vtk, qt, ctk, slicer
 from slicer.ScriptedLoadableModule import *
 from slicer.util import VTKObservationMixin
-import gmsh_api
-import gmsh_api.gmsh as gmsh
-import gmsh
 #
 # ComputationalGridGenerator
 #
@@ -270,23 +267,16 @@ class ComputationalGridGeneratorWidget(ScriptedLoadableModuleWidget, VTKObservat
     Run processing when user clicks "Apply" button.
     """
     try:
-        import pyvista as pv
-        import pyacvd
-        import math
-        import sys
+        import gmsh
         import meshio
+        import pyacvd
+        import pyvista as pv
     except ModuleNotFoundError as e:
-        if slicer.util.confirmOkCancelDisplay("This module requires 'gmsh, pyvista and pyacvd' Python package. Click OK to install (it takes several minutes)."):
-            slicer.util.pip_install("pyacvd")
-            slicer.util.pip_install("pyvista")
+        if slicer.util.confirmOkCancelDisplay("This module requires gmsh, meshio, pyacvd and pyvista Python packages. Click OK to install (it may take several minutes)."):
             slicer.util.pip_install("gmsh")
             slicer.util.pip_install("meshio")
-            import pyvista as pv
-            import gmsh_api
-            import gmsh_api.gmsh as gmsh
-            import gmsh
-            import math
-            import meshio
+            slicer.util.pip_install("pyacvd")
+            slicer.util.pip_install("pyvista")
 
 
       # Compute output
@@ -465,6 +455,7 @@ class ComputationalGridGeneratorLogic(ScriptedLoadableModuleLogic):
 
 
     #triangulation
+    import gmsh
     import pyvista as pv
     import pyacvd
     import math
