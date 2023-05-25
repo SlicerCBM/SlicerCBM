@@ -345,47 +345,7 @@ class ComputationalGridGeneratorLogic(ScriptedLoadableModuleLogic):
     effect.setParameter("MaximumThreshold", np.inf)
     effect.self().onApply()
 
-
-    #model maker module
-    """labelmapVolumeNode = slicer.mrmlScene.AddNewNodeByClass("vtkMRMLLabelMapVolumeNode")
-    slicer.modules.segmentations.logic().ExportVisibleSegmentsToLabelmapNode(segmentationNode, labelmapVolumeNode, inputVolume)
-    parameters = {}
-    parameters['Name'] = "model"
-    parameters["InputVolume"] = labelmapVolumeNode.GetID()
-    parameters['FilterType'] = "Laplacian"
-
-    # build only the currently selected model.
-    parameters['Labels'] = ""
-    parameters["StartLabel"] = -1
-    parameters["EndLabel"] = -1
-
-    parameters['GenerateAll'] = True
-    parameters["JointSmoothing"] = False
-    parameters["SplitNormals"] = False
-    parameters["PointNormals"] = False
-    parameters["SkipUnNamed"] = True
-
-
-    parameters["Decimate"] = 0.00
-    parameters["Smooth"] = 10
-
-
-    outHierarchy = slicer.vtkMRMLModelHierarchyNode()
-    outHierarchy.SetScene( slicer.mrmlScene )
-    outHierarchy.SetName( "Editor Models" )
-    slicer.mrmlScene.AddNode( outHierarchy )
-
-    parameters["ModelSceneFile"] = outHierarchy
-
-    modelMaker = slicer.modules.modelmaker
-
-    #self.CLINode = slicer.cli.run(modelMaker, self.CLINode, parameters)
-    slicer.cli.run(modelMaker, None, parameters)
-
-
-    #segmentationNode = slicer.util.loadSegmentation(labelmapVolumeNode)"""
     slicer.modules.segmentations.logic().ExportSegmentsClosedSurfaceRepresentationToFiles(fold_path, segmentationNode)
-
 
     #triangulation
     import gmsh
