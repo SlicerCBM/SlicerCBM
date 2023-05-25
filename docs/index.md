@@ -12,5 +12,6 @@ at [The University of Western Australia](https://www.uwa.edu.au).
 :hidden:
 
 Tutorial <tutorial/index>
+Modules <modules/index>
 
 ```
