@@ -361,6 +361,12 @@ class ComputationalGridGeneratorLogic(ScriptedLoadableModuleLogic):
     #use shrink wrapping to wrap the bone and get the full surface
     segmentEditorWidget.setActiveEffectByName("Wrap Solidify")
     effect = segmentEditorWidget.activeEffect()
+    if effect is None:
+      slicer.util.errorDisplay(
+        "This module requires the 'Wrap Solidify' segment editor effect." \
+        " Please install the 'SurfaceWrapSolidify' extension," \
+        " restart 3D Slicer, and try again.")
+      return
     segmentEditorWidget.setCurrentSegmentID(segmentationNode.GetSegmentation().GetSegmentIdBySegmentName("cran"))
     effect.setParameter("region", "outerSurface")
     effect.setParameter("regionSegmentID", "segment")
