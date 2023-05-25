@@ -469,21 +469,14 @@ class ComputationalGridGeneratorLogic(ScriptedLoadableModuleLogic):
     gmsh.model.geo.addVolume([l])
     #print("Volume added")
     gmsh.model.geo.synchronize()
-    funny = False
     f = gmsh.model.mesh.field.add("MathEval")
-    if funny:
-        gmsh.model.mesh.field.setString(f, "F", "2*Sin((x+y)/5) + 3")
-    else:
-        gmsh.model.mesh.field.setString(f, "F", "4")
+    gmsh.model.mesh.field.setString(f, "F", "4")
     gmsh.model.mesh.field.setAsBackgroundMesh(f)
-
 
     gmsh.model.mesh.generate(2)
     gmsh.write(fold_path+"/brainmask_auto.msh")
 
-
     gmsh.finalize()
-
 
     mesh = meshio.read(fold_path+"/brainmask_auto.msh")
     nodes = mesh.points
@@ -535,18 +528,12 @@ class ComputationalGridGeneratorLogic(ScriptedLoadableModuleLogic):
     gmsh.model.geo.addVolume([l])
     #print("Volume added")
     gmsh.model.geo.synchronize()
-    funny = False
     f = gmsh.model.mesh.field.add("MathEval")
-    if funny:
-        gmsh.model.mesh.field.setString(f, "F", "2*Sin((x+y)/5) + 3")
-    else:
-        gmsh.model.mesh.field.setString(f, "F", "4")
+    gmsh.model.mesh.field.setString(f, "F", "4")
     gmsh.model.mesh.field.setAsBackgroundMesh(f)
-
 
     gmsh.model.mesh.generate(3)
     gmsh.write(fold_path+"/brainmask_auto2.msh")
-
 
     gmsh.finalize()
     mesh2 = meshio.read(fold_path+"/brainmask_auto2.msh")
