@@ -346,28 +346,6 @@ class ComputationalGridGeneratorLogic(ScriptedLoadableModuleLogic):
     effect.self().onApply()
 
 
-    #use shrink wrapping to wrap the bone and get the full surface
-    segmentEditorWidget.setActiveEffectByName("Wrap Solidify")
-    effect = segmentEditorWidget.activeEffect()
-    if effect is None:
-      slicer.util.errorDisplay(
-        "This module requires the 'Wrap Solidify' segment editor effect." \
-        " Please install the 'SurfaceWrapSolidify' extension," \
-        " restart 3D Slicer, and try again.")
-      return
-    segmentEditorWidget.setCurrentSegmentID(segmentationNode.GetSegmentation().GetSegmentIdBySegmentName("cran"))
-    effect.setParameter("region", "outerSurface")
-    #effect.setParameter("REGION_OUTER_SURFACE", "outerSurface")
-    #effect.setParameter("REGION_LARGEST_CAVITY", "largestCavity")
-    effect.setParameter("carveHolesInOuterSurface", True)
-    effect.setParameter("carveHolesInOuterSurfaceDiameter", 10)
-    effect.setParameter("smoothingFactor", 0.5)
-    effect.setParameter("shrinkwrapIterations", 9)
-    effect.setParameter("outputType", "segment")
-    #effect.setParameter("outputModelNode", segmentName)
-    effect.self().onApply()
-
-
     #model maker module
     """labelmapVolumeNode = slicer.mrmlScene.AddNewNodeByClass("vtkMRMLLabelMapVolumeNode")
     slicer.modules.segmentations.logic().ExportVisibleSegmentsToLabelmapNode(segmentationNode, labelmapVolumeNode, inputVolume)
