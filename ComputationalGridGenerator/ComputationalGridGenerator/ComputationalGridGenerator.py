@@ -312,6 +312,9 @@ class ComputationalGridGeneratorLogic(ScriptedLoadableModuleLogic):
     if not inputVolume:
       raise ValueError("Input is invalid")
 
+    if not os.path.isdir(fold_path):
+      raise FileNotFoundError("Output directory does not exist.")
+
     import time
     startTime = time.time()
     logging.info('Processing started')
