@@ -337,27 +337,12 @@ class ComputationalGridGeneratorLogic(ScriptedLoadableModuleLogic):
     addedSegmentID = segmentationNode.GetSegmentation().AddEmptySegment("cran")
     segmentEditorNode.SetSelectedSegmentID(addedSegmentID)
 
-    # thresholding
-    #getting bone threshold value min and maximum
-    import vtkITK
-    thresholdCalculator = vtkITK.vtkITKImageThresholdCalculator()
-    thresholdCalculator.SetInputData(inputVolume.GetImageData())
-    thresholdCalculator.SetMethodToOtsu()
-    thresholdCalculator.Update()
-    boneThresholdValue = thresholdCalculator.GetThreshold()
-    volumeScalarRange = inputVolume.GetImageData().GetScalarRange()
-    logging.info("Volume minimum = {0}, maximum = {1}, bone threshold = {2}".format(volumeScalarRange[0], volumeScalarRange[1], boneThresholdValue))
-
-
-    #applying threshold effect
+    # Create mask from volume using threshold effect
+    import numpy as np
     segmentEditorWidget.setActiveEffectByName("Threshold")
     effect = segmentEditorWidget.activeEffect()
-    effect.setParameter("MinimumThreshold",str(boneThresholdValue))
-    effect.setParameter("MaximumThreshold",str(volumeScalarRange[1]))
-    #effect.setParameter("MinimumThreshold",0.0)#11130.40)#9386.40)
-    #effect.setParameter("MaximumThreshold",0)#31049.00)#21807.00)
-    #effect.setParameter("AutoThresholdMethod", "OTSU")
-    #effect.setParameter("AutoThresholdMode","SET_UPPER")
+    effect.setParameter("MinimumThreshold", np.finfo(np.float64).eps)
+    effect.setParameter("MaximumThreshold", np.inf)
     effect.self().onApply()
 
 
