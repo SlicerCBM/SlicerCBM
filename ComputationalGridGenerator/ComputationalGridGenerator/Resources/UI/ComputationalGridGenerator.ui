@@ -14,13 +14,13 @@
    <item>
     <widget class="ctkCollapsibleButton" name="inputsCollapsibleButton">
      <property name="text">
-      <string>Inputs</string>
+      <string>IO</string>
      </property>
      <layout class="QFormLayout" name="formLayout_2">
       <item row="0" column="0">
        <widget class="QLabel" name="label">
         <property name="text">
-         <string>Input volume:</string>
+         <string>Input Volume:</string>
         </property>
        </widget>
       </item>
@@ -45,20 +45,20 @@
         </property>
        </widget>
       </item>
+      <item row="1" column="0">
+       <widget class="QLabel" name="label_6">
+        <property name="text">
+         <string>Output Directory:</string>
+        </property>
+       </widget>
+      </item>
       <item row="1" column="1">
        <widget class="ctkPathLineEdit" name="fold_save">
         <property name="filters">
          <set>ctkPathLineEdit::Dirs|ctkPathLineEdit::Executable|ctkPathLineEdit::NoDot|ctkPathLineEdit::NoDotDot|ctkPathLineEdit::PermissionMask|ctkPathLineEdit::Readable|ctkPathLineEdit::Writable</set>
         </property>
         <property name="currentPath">
-         <string>/home/saima/</string>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="0">
-       <widget class="QLabel" name="label_6">
-        <property name="text">
-         <string>Input folder:</string>
+         <string/>
         </property>
        </widget>
       </item>
