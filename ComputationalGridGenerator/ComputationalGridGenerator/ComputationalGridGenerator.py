@@ -331,7 +331,7 @@ class ComputationalGridGeneratorLogic(ScriptedLoadableModuleLogic):
     segmentEditorNode = slicer.mrmlScene.AddNewNodeByClass("vtkMRMLSegmentEditorNode")
     segmentEditorWidget.setMRMLSegmentEditorNode(segmentEditorNode)
     segmentEditorWidget.setSegmentationNode(segmentationNode)
-    segmentEditorWidget.setMasterVolumeNode(inputVolume)
+    segmentEditorWidget.setSourceVolumeNode(inputVolume)
 
     # Create a new segment in segemnt editor effects
     addedSegmentID = segmentationNode.GetSegmentation().AddEmptySegment("cran")
@@ -372,7 +372,6 @@ class ComputationalGridGeneratorLogic(ScriptedLoadableModuleLogic):
       return
     segmentEditorWidget.setCurrentSegmentID(segmentationNode.GetSegmentation().GetSegmentIdBySegmentName("cran"))
     effect.setParameter("region", "outerSurface")
-    effect.setParameter("regionSegmentID", "segment")
     #effect.setParameter("REGION_OUTER_SURFACE", "outerSurface")
     #effect.setParameter("REGION_LARGEST_CAVITY", "largestCavity")
     effect.setParameter("carveHolesInOuterSurface", True)
