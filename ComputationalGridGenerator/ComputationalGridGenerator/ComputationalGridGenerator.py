@@ -4,9 +4,6 @@ import logging
 import vtk, qt, ctk, slicer
 from slicer.ScriptedLoadableModule import *
 from slicer.util import VTKObservationMixin
-import gmsh_api
-import gmsh_api.gmsh as gmsh
-import gmsh
 #
 # ComputationalGridGenerator
 #
@@ -19,7 +16,7 @@ class ComputationalGridGenerator(ScriptedLoadableModule):
   def __init__(self, parent):
     ScriptedLoadableModule.__init__(self, parent)
     self.parent.title = "ComputationalGridGenerator"  # TODO: make this more human readable by adding spaces
-    self.parent.categories = ["Examples"]  # TODO: set categories (folders where the module shows up in the module selector)
+    self.parent.categories = ["CBM.Mesh/Grid"]  # TODO: set categories (folders where the module shows up in the module selector)
     self.parent.dependencies = []  # TODO: add here list of module names that this module requires
     self.parent.contributors = ["Saima Safdar"]  # TODO: replace with "Firstname Lastname (Organization)"
     # TODO: update with short description of the module and a link to online module documentation
@@ -134,10 +131,6 @@ class ComputationalGridGeneratorWidget(ScriptedLoadableModuleWidget, VTKObservat
     # These connections ensure that whenever user changes some settings on the GUI, that is saved in the MRML scene
     # (in the selected parameter node).
     self.ui.inputSelector.connect("currentNodeChanged(vtkMRMLNode*)", self.updateParameterNodeFromGUI)
-    #self.ui.outputSelector.connect("currentNodeChanged(vtkMRMLNode*)", self.updateParameterNodeFromGUI)
-    #self.ui.imageThresholdSliderWidget.connect("valueChanged(double)", self.updateParameterNodeFromGUI)
-    self.ui.invertOutputCheckBox.connect("toggled(bool)", self.updateParameterNodeFromGUI)
-    #self.ui.invertedOutputSelector.connect("currentNodeChanged(vtkMRMLNode*)", self.updateParameterNodeFromGUI)
 
     # Buttons
     self.ui.applyButton.connect('clicked(bool)', self.onApplyButton)
@@ -231,9 +224,6 @@ class ComputationalGridGeneratorWidget(ScriptedLoadableModuleWidget, VTKObservat
     # Update node selectors and sliders
     self.ui.inputSelector.setCurrentNode(self._parameterNode.GetNodeReference("InputVolume"))
     #self.ui.outputSelector.setCurrentNode(self._parameterNode.GetNodeReference("OutputVolume"))
-    #self.ui.invertedOutputSelector.setCurrentNode(self._parameterNode.GetNodeReference("OutputVolumeInverse"))
-    #self.ui.imageThresholdSliderWidget.value = float(self._parameterNode.GetParameter("Threshold"))
-    self.ui.invertOutputCheckBox.checked = (self._parameterNode.GetParameter("Invert") == "true")
 
     # Update buttons states and tooltips
     if self._parameterNode.GetNodeReference("InputVolume"):
@@ -258,10 +248,6 @@ class ComputationalGridGeneratorWidget(ScriptedLoadableModuleWidget, VTKObservat
     wasModified = self._parameterNode.StartModify()  # Modify all properties in a single batch
 
     self._parameterNode.SetNodeReferenceID("InputVolume", self.ui.inputSelector.currentNodeID)
-    #self._parameterNode.SetNodeReferenceID("OutputVolume", self.ui.outputSelector.currentNodeID)
-    #self._parameterNode.SetParameter("Threshold", str(self.ui.imageThresholdSliderWidget.value))
-    #self._parameterNode.SetParameter("Invert", "true" if self.ui.invertOutputCheckBox.checked else "false")
-    #self._parameterNode.SetNodeReferenceID("OutputVolumeInverse", self.ui.invertedOutputSelector.currentNodeID)
 
     self._parameterNode.EndModify(wasModified)
 
@@ -270,40 +256,25 @@ class ComputationalGridGeneratorWidget(ScriptedLoadableModuleWidget, VTKObservat
     Run processing when user clicks "Apply" button.
     """
     try:
-        import pyvista as pv
+        import gmsh
+        import meshio
         import pyacvd
-        import math
-        import sys
-        import meshio 
+        import pyvista as pv
     except ModuleNotFoundError as e:
-        if slicer.util.confirmOkCancelDisplay("This module requires 'gmsh, pyvista and pyacvd' Python package. Click OK to install (it takes several minutes)."):
-            slicer.util.pip_install("pyacvd")
-            slicer.util.pip_install("pyvista")
+        if slicer.util.confirmOkCancelDisplay("This module requires gmsh, meshio, pyacvd and pyvista Python packages. Click OK to install (it may take several minutes)."):
             slicer.util.pip_install("gmsh")
             slicer.util.pip_install("meshio")
-            import pyvista as pv
-            import gmsh_api
-            import gmsh_api.gmsh as gmsh
-            import gmsh
-            import math
-            import meshio
-        
+            slicer.util.pip_install("pyacvd")
+            slicer.util.pip_install("pyvista")
+
 
       # Compute output
     try:
-          self.logic.process(self.ui.inputSelector.currentNode(), self.ui.fold_save.currentPath)#self.ui.invertOutputCheckBox.checked)
+          self.logic.process(self.ui.inputSelector.currentNode(), self.ui.fold_save.currentPath)
     except Exception as e:
           slicer.util.errorDisplay("Failed to compute results: "+str(e))
           import traceback
           traceback.print_exc()
-      # Compute inverted output (if needed)
-      #if self.ui.invertedOutputSelector.currentNode():
-        # If additional output volume is selected then result with inverted threshold is written there
-       # self.logic.process(self.ui.inputSelector.currentNode(), self.ui.fold_save.currentPath, 
-        #  not self.ui.invertOutputCheckBox.checked, showResult=False)
-
-    
-
 
 #
 # ComputationalGridGeneratorLogic
@@ -329,59 +300,43 @@ class ComputationalGridGeneratorLogic(ScriptedLoadableModuleLogic):
     """
     Initialize parameter node with default settings.
     """
-    if not parameterNode.GetParameter("Threshold"):
-      parameterNode.SetParameter("Threshold", "100.0")
-    if not parameterNode.GetParameter("Invert"):
-      parameterNode.SetParameter("Invert", "false")
+    pass
 
   def process(self, inputVolume, fold_path,  showResult=True):
     """
     Run the processing algorithm.
     Can be used without GUI widget.
     :param inputVolume: volume to be thresholded
-    :param outputVolume: thresholding result
-    :param imageThreshold: values above/below this threshold will be set to 0
-    :param invert: if True then values above the threshold will be set to 0, otherwise values below are set to 0
-    :param showResult: show output volume in slice viewers
     """
 
     if not inputVolume:
       raise ValueError("Input is invalid")
 
+    if not os.path.isdir(fold_path):
+      raise FileNotFoundError("Output directory does not exist.")
+
     import time
     startTime = time.time()
     logging.info('Processing started')
 
-    # Compute the thresholded output volume using the "Threshold Scalar Volume" CLI module
-    """cliParams = {
-      'InputVolume': inputVolume.GetID(),
-      'OutputVolume': outputVolume.GetID(),
-      'ThresholdValue' : imageThreshold,
-      'ThresholdType' : 'Above' if invert else 'Below'
-      }
-    cliNode = slicer.cli.run(slicer.modules.thresholdscalarvolume, None, cliParams, wait_for_completion=True, update_display=showResult)
-    # We don't need the CLI module node anymore, remove it to not clutter the scene with it
-    slicer.mrmlScene.RemoveNode(cliNode)"""
-    
-    
     #thresholding auto OSTU
     # Create segmentation
     segmentationNode = slicer.mrmlScene.AddNewNodeByClass("vtkMRMLSegmentationNode")
     segmentationNode.CreateDefaultDisplayNodes() # only needed for display
     segmentationNode.SetReferenceImageGeometryParameterFromVolumeNode(inputVolume)
-    
+
     # Create temporary segment editor to get access to effects
     segmentEditorWidget = slicer.qMRMLSegmentEditorWidget()
     segmentEditorWidget.setMRMLScene(slicer.mrmlScene)
     segmentEditorNode = slicer.mrmlScene.AddNewNodeByClass("vtkMRMLSegmentEditorNode")
     segmentEditorWidget.setMRMLSegmentEditorNode(segmentEditorNode)
     segmentEditorWidget.setSegmentationNode(segmentationNode)
-    segmentEditorWidget.setMasterVolumeNode(inputVolume)
-    
+    segmentEditorWidget.setSourceVolumeNode(inputVolume)
+
     # Create a new segment in segemnt editor effects
     addedSegmentID = segmentationNode.GetSegmentation().AddEmptySegment("cran")
     segmentEditorNode.SetSelectedSegmentID(addedSegmentID)
-    
+
     # thresholding
     #getting bone threshold value min and maximum
     import vtkITK
@@ -392,8 +347,8 @@ class ComputationalGridGeneratorLogic(ScriptedLoadableModuleLogic):
     boneThresholdValue = thresholdCalculator.GetThreshold()
     volumeScalarRange = inputVolume.GetImageData().GetScalarRange()
     logging.info("Volume minimum = {0}, maximum = {1}, bone threshold = {2}".format(volumeScalarRange[0], volumeScalarRange[1], boneThresholdValue))
-    
-    
+
+
     #applying threshold effect
     segmentEditorWidget.setActiveEffectByName("Threshold")
     effect = segmentEditorWidget.activeEffect()
@@ -404,14 +359,19 @@ class ComputationalGridGeneratorLogic(ScriptedLoadableModuleLogic):
     #effect.setParameter("AutoThresholdMethod", "OTSU")
     #effect.setParameter("AutoThresholdMode","SET_UPPER")
     effect.self().onApply()
-    
-     
-    #use shrink wrapping to wrap the bone and get the full surface 
+
+
+    #use shrink wrapping to wrap the bone and get the full surface
     segmentEditorWidget.setActiveEffectByName("Wrap Solidify")
     effect = segmentEditorWidget.activeEffect()
+    if effect is None:
+      slicer.util.errorDisplay(
+        "This module requires the 'Wrap Solidify' segment editor effect." \
+        " Please install the 'SurfaceWrapSolidify' extension," \
+        " restart 3D Slicer, and try again.")
+      return
     segmentEditorWidget.setCurrentSegmentID(segmentationNode.GetSegmentation().GetSegmentIdBySegmentName("cran"))
     effect.setParameter("region", "outerSurface")
-    effect.setParameter("regionSegmentID", "segment")
     #effect.setParameter("REGION_OUTER_SURFACE", "outerSurface")
     #effect.setParameter("REGION_LARGEST_CAVITY", "largestCavity")
     effect.setParameter("carveHolesInOuterSurface", True)
@@ -421,8 +381,8 @@ class ComputationalGridGeneratorLogic(ScriptedLoadableModuleLogic):
     effect.setParameter("outputType", "segment")
     #effect.setParameter("outputModelNode", segmentName)
     effect.self().onApply()
-    
-    
+
+
     #model maker module
     """labelmapVolumeNode = slicer.mrmlScene.AddNewNodeByClass("vtkMRMLLabelMapVolumeNode")
     slicer.modules.segmentations.logic().ExportVisibleSegmentsToLabelmapNode(segmentationNode, labelmapVolumeNode, inputVolume)
@@ -435,36 +395,37 @@ class ComputationalGridGeneratorLogic(ScriptedLoadableModuleLogic):
     parameters['Labels'] = ""
     parameters["StartLabel"] = -1
     parameters["EndLabel"] = -1
-    
+
     parameters['GenerateAll'] = True
     parameters["JointSmoothing"] = False
     parameters["SplitNormals"] = False
     parameters["PointNormals"] = False
     parameters["SkipUnNamed"] = True
 
-    
+
     parameters["Decimate"] = 0.00
     parameters["Smooth"] = 10
-    
-    
+
+
     outHierarchy = slicer.vtkMRMLModelHierarchyNode()
     outHierarchy.SetScene( slicer.mrmlScene )
     outHierarchy.SetName( "Editor Models" )
     slicer.mrmlScene.AddNode( outHierarchy )
 
     parameters["ModelSceneFile"] = outHierarchy
-  
+
     modelMaker = slicer.modules.modelmaker
-    
+
     #self.CLINode = slicer.cli.run(modelMaker, self.CLINode, parameters)
     slicer.cli.run(modelMaker, None, parameters)
-    
-    
+
+
     #segmentationNode = slicer.util.loadSegmentation(labelmapVolumeNode)"""
     slicer.modules.segmentations.logic().ExportSegmentsClosedSurfaceRepresentationToFiles(fold_path, segmentationNode)
-    
-    
+
+
     #triangulation
+    import gmsh
     import pyvista as pv
     import pyacvd
     import math
@@ -476,18 +437,18 @@ class ComputationalGridGeneratorLogic(ScriptedLoadableModuleLogic):
     clus.cluster(4000)
     nmesh = clus.create_mesh()
     #print(nClusters)
-    
+
     filePath =fold_path+"/surfaceMeshModel.stl"
     nmesh.save(filePath)
-      
+
     sMeshModel = slicer.util.loadModel(filePath)
 
     n = slicer.util.getNode(sMeshModel.GetID())
     nn = n.GetModelDisplayNode()
     #nn.EdgeVisibilityOff()
     nn.VisibilityOff()
-    
-    
+
+
     gmsh.initialize()
 
     gmsh.merge(filePath)
@@ -496,111 +457,98 @@ class ComputationalGridGeneratorLogic(ScriptedLoadableModuleLogic):
     forceParametrizablePatches = True
     includeBoundary = False
     curveAngle = 120
-    
+
     gmsh.model.mesh.classifySurfaces(angle * math.pi / 180., includeBoundary,forceParametrizablePatches, curveAngle * math.pi / 180.)
-    
+
     gmsh.model.mesh.createGeometry()
-     
+
     n = gmsh.model.getDimension()
     s = gmsh.model.getEntities(n)
     l = gmsh.model.geo.addSurfaceLoop([s[i][1] for i in range(len(s))])
     gmsh.model.geo.addVolume([l])
     #print("Volume added")
     gmsh.model.geo.synchronize()
-    funny = False
     f = gmsh.model.mesh.field.add("MathEval")
-    if funny:
-        gmsh.model.mesh.field.setString(f, "F", "2*Sin((x+y)/5) + 3")
-    else:
-        gmsh.model.mesh.field.setString(f, "F", "4")
+    gmsh.model.mesh.field.setString(f, "F", "4")
     gmsh.model.mesh.field.setAsBackgroundMesh(f)
-    
-    
+
     gmsh.model.mesh.generate(2)
     gmsh.write(fold_path+"/brainmask_auto.msh")
-    
-    
-    gmsh.finalize()
-    
-    
-    # mesh = meshio.read(fold_path+"/brainmask_auto.msh")
-    # nodes = mesh.points
-    # cells = mesh.cells_dict["triangle"]
-    # meshio.write_points_cells(fold_path+"/vMesh.vtk", nodes,[("triangle", cells)])
-    
-    # outputModel = slicer.util.loadModel(fold_path+"/vMesh.vtk")
-    
-    
-    # n = slicer.util.getNode(outputModel.GetID())
-    # nn = n.GetModelDisplayNode()
-    # nn.EdgeVisibilityOn()
-    # nn.SliceIntersectionVisibilityOn()
-    # nn.SetSliceIntersectionThickness(3)
-    # nn.SetColor(1,1,0) 
-    
-    # """gmsh.model.mesh.generate(3)
-    # gmsh.write(fold_path+"/brainmask_auto2.msh")
-    
-    
-    # gmsh.finalize()
-    
-    # mesh2 = meshio.read(fold_path+"/brainmask_auto2.msh")
-    # nodes2 = mesh2.points
-    # cells2 = mesh2.cells_dict["tetra"]
-    # meshio.write_points_cells(fold_path+"/vMesh2.vtk", nodes2,[("tretra", cells2)])
-    
-    # outputModel2 = slicer.util.loadModel(fold_path+"/vMesh2.vtk")
-    
-    # n = slicer.util.getNode(outputModel2.GetID())
-    # nn = n.GetModelDisplayNode()
-    # nn.EdgeVisibilityOn()"""
-    # gmsh.initialize()
 
-    # gmsh.merge(filePath)
-    # print(fold_path+"/"+segmentationNode.GetName()+"_cran.stl")
-    # angle = 40
-    # forceParametrizablePatches = True
-    # includeBoundary = False
-    # curveAngle = 120
-    
-    # gmsh.model.mesh.classifySurfaces(angle * math.pi / 180., includeBoundary,forceParametrizablePatches, curveAngle * math.pi / 180.)
-    
-    # gmsh.model.mesh.createGeometry()
-     
-    # n = gmsh.model.getDimension()
-    # s = gmsh.model.getEntities(n)
-    # l = gmsh.model.geo.addSurfaceLoop([s[i][1] for i in range(len(s))])
-    # gmsh.model.geo.addVolume([l])
-    # #print("Volume added")
-    # gmsh.model.geo.synchronize()
-    # funny = False
-    # f = gmsh.model.mesh.field.add("MathEval")
-    # if funny:
-    #     gmsh.model.mesh.field.setString(f, "F", "2*Sin((x+y)/5) + 3")
-    # else:
-    #     gmsh.model.mesh.field.setString(f, "F", "4")
-    # gmsh.model.mesh.field.setAsBackgroundMesh(f)
-    
-    
-    # gmsh.model.mesh.generate(3)
-    # gmsh.write(fold_path+"/brainmask_auto2.msh")
-    
-    
-    # gmsh.finalize()
-    # mesh2 = meshio.read(fold_path+"/brainmask_auto2.msh")
-    # nodes2 = mesh2.points
-    # cells2 = mesh2.cells_dict["tetra"]
-    # meshio.write_points_cells(fold_path+"/vMesh2.vtk", nodes2,[("tetra", cells2)])
-    
-    # outputModel2 = slicer.util.loadModel(fold_path+"/vMesh2.vtk")
-    
-    # n = slicer.util.getNode(outputModel2.GetID())
-    # nn = n.GetModelDisplayNode()
-    # nn.EdgeVisibilityOn()
-    # nn.SliceIntersectionVisibilityOn()
-    # nn.SetSliceIntersectionOpacity(0.3)
-    # nn.SetColor(128/225,174/225,128/225) #green color
-    
+    gmsh.finalize()
+
+    mesh = meshio.read(fold_path+"/brainmask_auto.msh")
+    nodes = mesh.points
+    cells = mesh.cells_dict["triangle"]
+    meshio.write_points_cells(fold_path+"/vMesh.vtk", nodes,[("triangle", cells)])
+
+    outputModel = slicer.util.loadModel(fold_path+"/vMesh.vtk")
+
+
+    n = slicer.util.getNode(outputModel.GetID())
+    nn = n.GetModelDisplayNode()
+    nn.EdgeVisibilityOn()
+    nn.SliceIntersectionVisibilityOn()
+    nn.SetSliceIntersectionThickness(3)
+    nn.SetColor(1,1,0)
+
+    """gmsh.model.mesh.generate(3)
+    gmsh.write(fold_path+"/brainmask_auto2.msh")
+
+
+    gmsh.finalize()
+
+    mesh2 = meshio.read(fold_path+"/brainmask_auto2.msh")
+    nodes2 = mesh2.points
+    cells2 = mesh2.cells_dict["tetra"]
+    meshio.write_points_cells(fold_path+"/vMesh2.vtk", nodes2,[("tretra", cells2)])
+
+    outputModel2 = slicer.util.loadModel(fold_path+"/vMesh2.vtk")
+
+    n = slicer.util.getNode(outputModel2.GetID())
+    nn = n.GetModelDisplayNode()
+    nn.EdgeVisibilityOn()"""
+    gmsh.initialize()
+
+    gmsh.merge(filePath)
+    print(fold_path+"/"+segmentationNode.GetName()+"_cran.stl")
+    angle = 40
+    forceParametrizablePatches = True
+    includeBoundary = False
+    curveAngle = 120
+
+    gmsh.model.mesh.classifySurfaces(angle * math.pi / 180., includeBoundary,forceParametrizablePatches, curveAngle * math.pi / 180.)
+
+    gmsh.model.mesh.createGeometry()
+
+    n = gmsh.model.getDimension()
+    s = gmsh.model.getEntities(n)
+    l = gmsh.model.geo.addSurfaceLoop([s[i][1] for i in range(len(s))])
+    gmsh.model.geo.addVolume([l])
+    #print("Volume added")
+    gmsh.model.geo.synchronize()
+    f = gmsh.model.mesh.field.add("MathEval")
+    gmsh.model.mesh.field.setString(f, "F", "4")
+    gmsh.model.mesh.field.setAsBackgroundMesh(f)
+
+    gmsh.model.mesh.generate(3)
+    gmsh.write(fold_path+"/brainmask_auto2.msh")
+
+    gmsh.finalize()
+    mesh2 = meshio.read(fold_path+"/brainmask_auto2.msh")
+    nodes2 = mesh2.points
+    cells2 = mesh2.cells_dict["tetra"]
+    meshio.write_points_cells(fold_path+"/vMesh2.vtk", nodes2,[("tetra", cells2)])
+
+    outputModel2 = slicer.util.loadModel(fold_path+"/vMesh2.vtk")
+
+    n = slicer.util.getNode(outputModel2.GetID())
+    nn = n.GetModelDisplayNode()
+    nn.EdgeVisibilityOn()
+    nn.SliceIntersectionVisibilityOn()
+    nn.SetSliceIntersectionOpacity(0.3)
+    nn.SetColor(128/225,174/225,128/225) #green color
+
     stopTime = time.time()
     logging.info('Processing completed in {0:.2f} seconds'.format(stopTime-startTime))
 
@@ -642,32 +590,8 @@ class ComputationalGridGeneratorTest(ScriptedLoadableModuleTest):
 
     # Get/create input data
 
-    import SampleData
-    registerSampleData()
-    inputVolume = SampleData.downloadSample('ComputationalGridGenerator1')
-    self.delayDisplay('Loaded test data set')
-
-    inputScalarRange = inputVolume.GetImageData().GetScalarRange()
-    self.assertEqual(inputScalarRange[0], 0)
-    self.assertEqual(inputScalarRange[1], 695)
-
-    outputVolume = slicer.mrmlScene.AddNewNodeByClass("vtkMRMLScalarVolumeNode")
-    threshold = 100
-
     # Test the module logic
 
     logic = ComputationalGridGeneratorLogic()
 
-    # Test algorithm with non-inverted threshold
-    logic.process(inputVolume, outputVolume, threshold, True)
-    outputScalarRange = outputVolume.GetImageData().GetScalarRange()
-    self.assertEqual(outputScalarRange[0], inputScalarRange[0])
-    self.assertEqual(outputScalarRange[1], threshold)
-
-    # Test algorithm with inverted threshold
-    logic.process(inputVolume, outputVolume, threshold, False)
-    outputScalarRange = outputVolume.GetImageData().GetScalarRange()
-    self.assertEqual(outputScalarRange[0], inputScalarRange[0])
-    self.assertEqual(outputScalarRange[1], inputScalarRange[1])
-
-    self.delayDisplay('Test passed')
+    self.delayDisplay('Test not implemented yet')
