@@ -523,83 +523,83 @@ class ComputationalGridGeneratorLogic(ScriptedLoadableModuleLogic):
     gmsh.finalize()
     
     
-    # mesh = meshio.read(fold_path+"/brainmask_auto.msh")
-    # nodes = mesh.points
-    # cells = mesh.cells_dict["triangle"]
-    # meshio.write_points_cells(fold_path+"/vMesh.vtk", nodes,[("triangle", cells)])
+    mesh = meshio.read(fold_path+"/brainmask_auto.msh")
+    nodes = mesh.points
+    cells = mesh.cells_dict["triangle"]
+    meshio.write_points_cells(fold_path+"/vMesh.vtk", nodes,[("triangle", cells)])
     
-    # outputModel = slicer.util.loadModel(fold_path+"/vMesh.vtk")
-    
-    
-    # n = slicer.util.getNode(outputModel.GetID())
-    # nn = n.GetModelDisplayNode()
-    # nn.EdgeVisibilityOn()
-    # nn.SliceIntersectionVisibilityOn()
-    # nn.SetSliceIntersectionThickness(3)
-    # nn.SetColor(1,1,0) 
-    
-    # """gmsh.model.mesh.generate(3)
-    # gmsh.write(fold_path+"/brainmask_auto2.msh")
+    outputModel = slicer.util.loadModel(fold_path+"/vMesh.vtk")
     
     
-    # gmsh.finalize()
+    n = slicer.util.getNode(outputModel.GetID())
+    nn = n.GetModelDisplayNode()
+    nn.EdgeVisibilityOn()
+    nn.SliceIntersectionVisibilityOn()
+    nn.SetSliceIntersectionThickness(3)
+    nn.SetColor(1,1,0) 
     
-    # mesh2 = meshio.read(fold_path+"/brainmask_auto2.msh")
-    # nodes2 = mesh2.points
-    # cells2 = mesh2.cells_dict["tetra"]
-    # meshio.write_points_cells(fold_path+"/vMesh2.vtk", nodes2,[("tretra", cells2)])
+    """gmsh.model.mesh.generate(3)
+    gmsh.write(fold_path+"/brainmask_auto2.msh")
     
-    # outputModel2 = slicer.util.loadModel(fold_path+"/vMesh2.vtk")
     
-    # n = slicer.util.getNode(outputModel2.GetID())
-    # nn = n.GetModelDisplayNode()
-    # nn.EdgeVisibilityOn()"""
-    # gmsh.initialize()
+    gmsh.finalize()
+    
+    mesh2 = meshio.read(fold_path+"/brainmask_auto2.msh")
+    nodes2 = mesh2.points
+    cells2 = mesh2.cells_dict["tetra"]
+    meshio.write_points_cells(fold_path+"/vMesh2.vtk", nodes2,[("tretra", cells2)])
+    
+    outputModel2 = slicer.util.loadModel(fold_path+"/vMesh2.vtk")
+    
+    n = slicer.util.getNode(outputModel2.GetID())
+    nn = n.GetModelDisplayNode()
+    nn.EdgeVisibilityOn()"""
+    gmsh.initialize()
 
-    # gmsh.merge(filePath)
-    # print(fold_path+"/"+segmentationNode.GetName()+"_cran.stl")
-    # angle = 40
-    # forceParametrizablePatches = True
-    # includeBoundary = False
-    # curveAngle = 120
+    gmsh.merge(filePath)
+    print(fold_path+"/"+segmentationNode.GetName()+"_cran.stl")
+    angle = 40
+    forceParametrizablePatches = True
+    includeBoundary = False
+    curveAngle = 120
     
-    # gmsh.model.mesh.classifySurfaces(angle * math.pi / 180., includeBoundary,forceParametrizablePatches, curveAngle * math.pi / 180.)
+    gmsh.model.mesh.classifySurfaces(angle * math.pi / 180., includeBoundary,forceParametrizablePatches, curveAngle * math.pi / 180.)
     
-    # gmsh.model.mesh.createGeometry()
+    gmsh.model.mesh.createGeometry()
      
-    # n = gmsh.model.getDimension()
-    # s = gmsh.model.getEntities(n)
-    # l = gmsh.model.geo.addSurfaceLoop([s[i][1] for i in range(len(s))])
-    # gmsh.model.geo.addVolume([l])
-    # #print("Volume added")
-    # gmsh.model.geo.synchronize()
-    # funny = False
-    # f = gmsh.model.mesh.field.add("MathEval")
-    # if funny:
-    #     gmsh.model.mesh.field.setString(f, "F", "2*Sin((x+y)/5) + 3")
-    # else:
-    #     gmsh.model.mesh.field.setString(f, "F", "4")
-    # gmsh.model.mesh.field.setAsBackgroundMesh(f)
+    n = gmsh.model.getDimension()
+    s = gmsh.model.getEntities(n)
+    l = gmsh.model.geo.addSurfaceLoop([s[i][1] for i in range(len(s))])
+    gmsh.model.geo.addVolume([l])
+    #print("Volume added")
+    gmsh.model.geo.synchronize()
+    funny = False
+    f = gmsh.model.mesh.field.add("MathEval")
+    if funny:
+        gmsh.model.mesh.field.setString(f, "F", "2*Sin((x+y)/5) + 3")
+    else:
+        gmsh.model.mesh.field.setString(f, "F", "4")
+    gmsh.model.mesh.field.setAsBackgroundMesh(f)
     
     
-    # gmsh.model.mesh.generate(3)
-    # gmsh.write(fold_path+"/brainmask_auto2.msh")
+    gmsh.model.mesh.generate(3)
+    gmsh.write(fold_path+"/brainmask_auto2.msh")
     
     
-    # gmsh.finalize()
-    # mesh2 = meshio.read(fold_path+"/brainmask_auto2.msh")
-    # nodes2 = mesh2.points
-    # cells2 = mesh2.cells_dict["tetra"]
-    # meshio.write_points_cells(fold_path+"/vMesh2.vtk", nodes2,[("tetra", cells2)])
+    gmsh.finalize()
+    mesh2 = meshio.read(fold_path+"/brainmask_auto2.msh")
+    nodes2 = mesh2.points
+    cells2 = mesh2.cells_dict["tetra"]
+    meshio.write_points_cells(fold_path+"/vMesh2.vtk", nodes2,[("tetra", cells2)])
     
-    # outputModel2 = slicer.util.loadModel(fold_path+"/vMesh2.vtk")
+    outputModel2 = slicer.util.loadModel(fold_path+"/vMesh2.vtk")
     
-    # n = slicer.util.getNode(outputModel2.GetID())
-    # nn = n.GetModelDisplayNode()
-    # nn.EdgeVisibilityOn()
-    # nn.SliceIntersectionVisibilityOn()
-    # nn.SetSliceIntersectionOpacity(0.3)
-    # nn.SetColor(128/225,174/225,128/225) #green color
+    n = slicer.util.getNode(outputModel2.GetID())
+    nn = n.GetModelDisplayNode()
+    nn.EdgeVisibilityOn()
+    nn.SliceIntersectionVisibilityOn()
+    nn.SetSliceIntersectionOpacity(0.3)
+    nn.SetColor(128/225,174/225,128/225) #green color
     
     stopTime = time.time()
     logging.info('Processing completed in {0:.2f} seconds'.format(stopTime-startTime))
