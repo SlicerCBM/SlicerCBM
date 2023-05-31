@@ -45,47 +45,47 @@ class MTLEDSimulatorWidget(ScriptedLoadableModuleWidget):
 
     #self.ui.Model
     #self.ui.pathLineEdit.setCurrentPath(ctk.ctkPathLineEdit.Dirs)
-    
+
     #parametersCollapsibleButton = ctk.ctkCollapsibleButton()
     #parametersCollapsibleButton.text = "Model"
     #self.layout.addWidget(parametersCollapsibleButton)
-    
+
     #parametersFormLayout = qt.QFormLayout(parametersCollapsibleButton)
     #self.inputDirSelector = ctk.ctkPathLineEdit()
     #self.inputDirSelector.filters = ctk.ctkPathLineEdit.Dirs
     #self.inputDirSelector.settingKey = 'DICOMPatcherInputDir'
     #parametersFormLayout.addRow("Input mesh file:", self.inputDirSelector)
-    
-    
+
+
     #second collapsible
     #parametersCollapsibleButton2 = ctk.ctkCollapsibleButton()
     #parametersCollapsibleButton2.text = "Integration Points"
     #self.layout.addWidget(parametersCollapsibleButton2)
-    
+
     #parametersFormLayout = qt.QFormLayout(parametersCollapsibleButton2)
     #self.inputDirSelector2 = ctk.ctkPathLineEdit()
     #self.inputDirSelector2.filters = ctk.ctkPathLineEdit.Dirs
     #self.inputDirSelector2.settingKey = 'DICOMPatcherInputDir'
     #parametersFormLayout.addRow("Input integration points file:", self.inputDirSelector2)
-    
-    
-    
+
+
+
     #3rd collapsible button
     #parametersCollapsibleButton3 = ctk.ctkCollapsibleButton()
     #parametersCollapsibleButton3.text = "Materials"
     #self.layout.addWidget(parametersCollapsibleButton3)
-    
+
     #parametersFormLayout = qt.QFormLayout(parametersCollapsibleButton3)
     #self.inputDirSelector4 = ctk.ctkPathLineEdit()
     #self.inputDirSelector4.filters = ctk.ctkPathLineEdit.Dirs
     #self.inputDirSelector4.settingKey = 'DICOMPatcherInputDir'
     #parametersFormLayout.addRow("Input material properties file:", self.inputDirSelector4)
-    
+
     #4th button
     #parametersCollapsibleButton4 = ctk.ctkCollapsibleButton()
     #parametersCollapsibleButton4.text = "Shape function"
     #self.layout.addWidget(parametersCollapsibleButton4)
-    
+
     #parametersFormLayout = qt.QFormLayout(parametersCollapsibleButton4)
 
     #loadReferencesComboBox = ctk.ctkComboBox()
@@ -97,28 +97,28 @@ class MTLEDSimulatorWidget(ScriptedLoadableModuleWidget):
     #loadReferencesComboBox.addItem("Never", qt.QMessageBox.No)
     #loadReferencesComboBox.currentIndex = 0
     #parametersFormLayout.addRow("Load referenced series:", loadReferencesComboBox)
-    
+
     #5th button
     #parametersCollapsibleButton5 = ctk.ctkCollapsibleButton()
     #parametersCollapsibleButton5.text = "Loading"
     #self.layout.addWidget(parametersCollapsibleButton5)
-    
+
     #6th
     #parametersCollapsibleButton6 = ctk.ctkCollapsibleButton()
     #parametersCollapsibleButton6.text = "Contacts"
     #self.layout.addWidget(parametersCollapsibleButton6)
-    
+
     #7th
     #parametersCollapsibleButton7 = ctk.ctkCollapsibleButton()
     #parametersCollapsibleButton7.text = "Dynamic relaxation"
     #self.layout.addWidget(parametersCollapsibleButton7)
-    
+
     #8th
     #parametersCollapsibleButton8 = ctk.ctkCollapsibleButton()
     #parametersCollapsibleButton8.text = "Output"
     #self.layout.addWidget(parametersCollapsibleButton8)
-    
-    
+
+
     self.ui.inputSelector.setMRMLScene(slicer.mrmlScene)
     self.ui.outputSelector.setMRMLScene(slicer.mrmlScene)
     self.ui.applyButton.enabled =True
@@ -143,7 +143,7 @@ class MTLEDSimulatorWidget(ScriptedLoadableModuleWidget):
     logic = MTLEDSimulatorLogic()
     enableScreenshotsFlag = self.ui.enableScreenshotsFlagCheckBox.checked
     imageThreshold = self.ui.imageThresholdSliderWidget.value
-    
+
     #Model
     meshFile = self.ui.meshFile.currentPath
     mass_scaling = self.ui.massscaling.currentText
@@ -154,10 +154,10 @@ class MTLEDSimulatorWidget(ScriptedLoadableModuleWidget):
     tDivision = self.ui.tDevision.value
     iTetra = self.ui.iTetra.value
     intFile = self.ui.intFile.currentPath
-    
+
     #materials
     mFile = self.ui.mFile.currentPath
-    
+
     #shape function
     tFunction = self.ui.type.currentText
     bFunction = self.ui.bFunction.currentText
@@ -166,19 +166,19 @@ class MTLEDSimulatorWidget(ScriptedLoadableModuleWidget):
     #loading
     lFile = self.ui.lFile.currentPath
     loadCurve = self.ui.loadCurve.currentText
-    
+
     #contacts
     contact = self.ui.contact.text
     skull = self.ui.skull.text
-    
+
     #dynamic relaxation
     loadIntegration = self.ui.loadIntegration.value
     loadRunning = self.ui.loadRunning.value
     eTime = self.ui.eTime.value
-    
+
     #outputfiles
     dButton = self.ui.sPath.currentPath
-    
+
     logic.run(self.ui.inputSelector.currentNode(), self.ui.outputSelector.currentNode(), imageThreshold, meshFile, mass_scaling,adap, adaptive_eps, adap_level, tDivision, iTetra,intFile, mFile, tFunction,bFunction, uDerivative, dilationCoefficient, lFile, loadCurve, contact, skull,loadIntegration, loadRunning, eTime, dButton, enableScreenshotsFlag)
 
 #
@@ -236,7 +236,7 @@ class MTLEDSimulatorLogic(ScriptedLoadableModuleLogic):
     # Compute the thresholded output volume using the Threshold Scalar Volume CLI module
     #cliParams = {'InputVolume': inputVolume.GetID(), 'OutputVolume': outputVolume.GetID(), 'ThresholdValue' : imageThreshold, 'ThresholdType' : 'Above'}
     #cliNode = slicer.cli.run(slicer.modules.thresholdscalarvolume, None, cliParams, wait_for_completion=True)
-   
+
     print(meshFile, mass_scaling)
     print(adap)
     print(adaptive_eps)
@@ -247,13 +247,13 @@ class MTLEDSimulatorLogic(ScriptedLoadableModuleLogic):
     print(bFunction, uDerivative, dilationCoefficient, loadCurve, contact, skull, loadIntegration, loadRunning, eTime)
     print(dButton)
     print(mFile, intFile, lFile)
-    
+
     #writing the information to ini file
     import os
     dir_path = os.path.dirname(os.path.realpath(__file__))
     print(dir_path)
     file = open(dir_path+"/demo.ini",'w+')
-    
+
     file.write("[Model]\n")
     file.write("MeshFile = "+meshFile+"\n")
     file.write("MassScaling = "+mass_scaling+"\n")
@@ -267,33 +267,33 @@ class MTLEDSimulatorLogic(ScriptedLoadableModuleLogic):
         file.write("SaveToFile ="+intFile+"\n")
     file.write("[Material]"+"\n")
     file.write("ReadFromFile ="+mFile+"\n")
-    
+
     file.write("[ShapeFunction]"+"\n")
     file.write("Type = "+tFunction+"\n")
     file.write("BasisFunctionType = "+bFunction+"\n")
     file.write("UseExactDerivatives ="+uDerivative+"\n")
     file.write("DilatationCoefficient = "+str(dilationCoefficient)+"\n")
-    
+
     file.write("[Boundary]  "+"\n")
     file.write("[Loading]"+"\n")
     file.write("ReadFromFile ="+lFile+"\n")
     file.write("FileLoadCurve = "+loadCurve+"\n")
-    
+
     file.write("[Contacts]"+"\n")
     file.write("NodeSet = "+contact+"\n")
     file.write("Surface = "+skull +"\n")
-    
+
     file.write("[EBCIEM]"+"\n")
     file.write("UseEBCIEM = false"+"\n")
     file.write("UseSimplifiedVersion = false"+"\n")
-    
+
     file.write("[DynamicRelaxation]"+"\n")
     if loadIntegration==0.0:
         file.write("LoadTime = "+str(loadRunning)+"\n")
     else:
         file.write("LoadTime = "+str(loadIntegration)+"\n")
     file.write("EquilibriumTime ="+str(int(eTime))+"\n")
-    
+
     file.write("LoadConvRate = 0.999"+"\n")
     file.write("AfterLoadConvRate = 0.99"+"\n")
     file.write("StopUpdateConvRateStepsNum = 2000"+"\n")
@@ -304,22 +304,22 @@ class MTLEDSimulatorLogic(ScriptedLoadableModuleLogic):
     file.write("StopConvRateError = 0.2"+"\n")
     file.write("StopAbsError = 0.00001"+"\n")
     file.write("StopStepsNum = 100"+"\n")
-    
+
     file.write("[MTLED]"+"\n")
     file.write("SaveProgressSteps = 500"+"\n")
     file.write("UsePredefinedStableTimeStep = true "+"\n")
     file.write("StableTimeStep = 0.001"+"\n")
-    
+
     file.write("[Output]"+"\n")
     file.write("FilePath ="+dir_path+"/results"+"\n")
     file.write("FileName = brain.vtu"+"\n")
     file.write("AnimationName = animation_brain.pvd"+"\n")
     file.close()
-    
-  
+
+
     file_mtledSimulator = dButton
-    command_line = ["/home/saima/explicitsim/build-bucketsearch/ExplicitSimRun", dir_path+"/demo.ini"]
-    
+    command_line = ["/opt/explicitsim/bin/ExplicitSim/ExplicitSimRun", dir_path+"/demo.ini"]
+
     from subprocess import Popen
     import subprocess
     import sys
@@ -327,16 +327,16 @@ class MTLEDSimulatorLogic(ScriptedLoadableModuleLogic):
     stdout, stderr = result.communicate()
     print(stdout, stderr)
     print(result)
-    
+
     #file = "/home/saima/benzwick-explicitsim-f7f515ec1301/build/Saima/brain_withmaterial_results/brain2.vtu"
     #import meshio
     #mesh = meshio.read(file)
     #meshio.write(r"home/saima/benzwick-explicitsim-f7f515ec1301/build/Saima/brain_withmaterial_results/brain2.vtk", mesh)
-    
+
     #model = slicer.util.loadModel(dir_path+"/results/brain)
-    
-    
-    
+
+
+
     # Capture screenshot
     if enableScreenshots:
       self.takeScreenshot('MTLEDSimulatorTest-Start','MyScreenshot',-1)
