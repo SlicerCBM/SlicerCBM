@@ -4,3 +4,6 @@ __pycache__/
 *$py.class
 docs/_build
 .DS_Store
+
+# Visual Studio Code
+.vscode/
