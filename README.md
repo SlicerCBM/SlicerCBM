@@ -21,7 +21,7 @@ The SlicerCBM extension currently includes the following features implemented as
 
 - Segmentation
   - DTI Segmentation: Segment diffusion tensor image (DTI) into gray matter (GM), white matter (WM) and cerebrospinal fluid (CSF) tissue classes using fuzzy C-means clustering (FCM) algorithm.
-  - Fusion
+  - Fusion: Create skull and scalp segments from brain segment
   - Fusion2
 
 - Geometry
@@ -34,8 +34,8 @@ The SlicerCBM extension currently includes the following features implemented as
 
 - Mesh/Grid
   - MVox Mesh Generator: Create structured hexahedral grid using MVox.
-  - Tetrahedral Mesh Generator (deprecated): Create tetrahedral grid using Gmsh. This module is deprecated and will be removed. Please use the ComputationalGridGenerator module instead.
-  - Computational Grid Generator (todo): Create tetrahedral grid using Gmsh.
+  - Tetrahedral Mesh Generator ~~(deprecated)~~: Create tetrahedral grid using Gmsh. ~~This module is deprecated and will be removed. Please use the ComputationalGridGenerator module instead.~~
+  - ~~Computational Grid Generator (todo): Create tetrahedral grid using Gmsh.~~
   - Tumor Resection And BRain Remodelling: Create tetrahedral grid of brain with tumor cavity using Gmsh.
 
 - Property
@@ -64,7 +64,7 @@ or automatically loaded when installing SlicerCBM,
 but may be useful for some applications:
 
 - Mesh Nodes To Fiducials (TODO) (see [#51](https://github.com/SlicerCBM/SlicerCBM/issues/51))
-- Tetrahedral Mesh Generator (TODO)
+- ~~Tetrahedral Mesh Generator (TODO)~~
 
 ## Installation
 
