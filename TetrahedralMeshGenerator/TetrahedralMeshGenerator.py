@@ -4,12 +4,6 @@ import logging
 import vtk, qt, ctk, slicer
 from slicer.ScriptedLoadableModule import *
 from slicer.util import VTKObservationMixin
-#import gmsh_api
-#import gmsh_api.gmsh as gmsh
-#import gmsh
-#import math
-#import sys
-#import meshio
 #
 # TetrahedralMeshGenerator
 #
@@ -71,9 +65,9 @@ class TetrahedralMeshGeneratorWidget(ScriptedLoadableModuleWidget, VTKObservatio
     # Connections
     self.ui.parameterNodeSelector.connect('currentNodeChanged(vtkMRMLNode*)', self.setParameterNode)
 
-    
+
     self.ui.outputSelector.connect("currentNodeChanged(vtkMRMLNode*)", self.updateParameterNodeFromGUI)
-    
+
 
     self.ui.applyButton.connect('clicked(bool)', self.onApplyButton)
 
@@ -114,18 +108,18 @@ class TetrahedralMeshGeneratorWidget(ScriptedLoadableModuleWidget, VTKObservatio
 
     # Disable all sections if no parameter node is selected
     self.ui.basicCollapsibleButton.enabled = self._parameterNode is not None
-    
+
     if self._parameterNode is None:
       return
 
     # Update each widget from parameter node
-    
-    
+
+
     wasBlocked = self.ui.outputSelector.blockSignals(True)
     self.ui.outputSelector.setCurrentNode(self._parameterNode.GetNodeReference("OutputVolume"))
     self.ui.outputSelector.blockSignals(wasBlocked)
 
-    
+
     # Update buttons states and tooltips
     if self._parameterNode.GetNodeReference("OutputVolume"):
       self.ui.applyButton.toolTip = "Compute output volume"
@@ -143,36 +137,24 @@ class TetrahedralMeshGeneratorWidget(ScriptedLoadableModuleWidget, VTKObservatio
     if self._parameterNode is None:
       return
 
-   
+
     self._parameterNode.SetNodeReferenceID("OutputVolume", self.ui.outputSelector.currentNodeID)
-    
+
 
   def onApplyButton(self):
     """
     Run processing when user clicks "Apply" button.
-    
+
     """
     try:
-        import gmsh_api
-        import gmsh_api.gmsh as gmsh
         import gmsh
-        import math
-        import sys
         import meshio
-        #import skfuzzy
     except:
-        slicer.util.pip_install("gmsh_api")
         slicer.util.pip_install("gmsh")
         slicer.util.pip_install("meshio")
-        import gmsh_api
-        import gmsh_api.gmsh as gmsh
         import gmsh
-        import math
-        import sys
         import meshio
-        #slicer.util.pip_install('scikit-fuzzy')
-        #import skfuzzy
-    
+
     try:
       self.logic.run(self.ui.inputFile.currentPath, self.ui.outputSelector.currentNode(),self.ui.outputFile.currentPath, self.ui.meshType.value)
     except Exception as e:
@@ -210,8 +192,11 @@ class TetrahedralMeshGeneratorLogic(ScriptedLoadableModuleLogic):
     if not inputFile or not outputModel:
       raise ValueError("Input File or output Model is invalid")
 
-    logging.info('Processing started')
+    import gmsh
+    import math
     import time
+
+    logging.info('Processing started')
     start_time = time.time()
     #temporary path for mid files to be saved
     dir_path = os.path.dirname(os.path.realpath(__file__))
@@ -223,7 +208,7 @@ class TetrahedralMeshGeneratorLogic(ScriptedLoadableModuleLogic):
     #gmsh.option.setNumber("Mesh.CharacteristicLengthMax", 2);
     #gmsh.option.setNumber("Mesh.Optimize",1)
     #gmsh.option.setNumber("Mesh.QualityType",2);
-    #gmsh.option.setNumber("Mesh.CharacteristicLengthFactor",3)#  
+    #gmsh.option.setNumber("Mesh.CharacteristicLengthFactor",3)#
 
     # Let's merge an STL mesh that we would like to remesh (from the parent
     # directory):
@@ -236,31 +221,31 @@ class TetrahedralMeshGeneratorLogic(ScriptedLoadableModuleLogic):
     # curves and points.
     # Angle between two triangles above which an edge is considered as sharp:
     angle = 40
-    
+
     # For complex geometries, patches can be too complex, too elongated or too large
     # to be parametrized; setting the following option will force the creation of
     # patches that are amenable to reparametrization:
     forceParametrizablePatches = True
-    
+
     # For open surfaces include the boundary edges in the classification process:
     includeBoundary = False
-    
+
     # Force curves to be split on given angle:
     curveAngle = 120
-    
+
     gmsh.model.mesh.classifySurfaces(angle * math.pi / 180., includeBoundary,forceParametrizablePatches, curveAngle * math.pi / 180.)
-    
+
     gmsh.model.mesh.createGeometry()
 
-    
+
     n = gmsh.model.getDimension()
     s = gmsh.model.getEntities(n)
     l = gmsh.model.geo.addSurfaceLoop([s[i][1] for i in range(len(s))])
     gmsh.model.geo.addVolume([l])
     #print("Volume added")
     gmsh.model.geo.synchronize()
-    
-    
+
+
     # We specify element sizes imposed by a size field, just because we can :-)
     funny = False
     f = gmsh.model.mesh.field.add("MathEval")
@@ -269,13 +254,13 @@ class TetrahedralMeshGeneratorLogic(ScriptedLoadableModuleLogic):
     else:
         gmsh.model.mesh.field.setString(f, "F", "4")
     gmsh.model.mesh.field.setAsBackgroundMesh(f)
-    
-    
-    
-    
+
+
+
+
     gmsh.model.mesh.generate(meshType)
     gmsh.write(dir_path+"/brainmask_auto.msh")
-    
+
     print(meshType)
     #gmsh.model.mesh.generate(2)
     gmsh.finalize()
@@ -284,27 +269,27 @@ class TetrahedralMeshGeneratorLogic(ScriptedLoadableModuleLogic):
         cellType = "triangle"
     else:
         cellType = "tetra"
-    
+
     #convert .msh to .vtk and load it in  slicer
     mesh = meshio.read(dir_path+"/brainmask_auto.msh")
     nodes = mesh.points
     cells = mesh.cells_dict[cellType]
     meshio.write_points_cells(dir_path+"/vMesh.vtk", nodes,[(cellType, cells)])
-    
+
     outputModel = slicer.util.loadModel(dir_path+"/vMesh.vtk")
 
     n = slicer.util.getNode(outputModel.GetID())
     nn = n.GetModelDisplayNode()
     nn.EdgeVisibilityOn()
-    
+
     #msh=meshio.read("./MSH/brainmask_auto.msh")
     #nodes=msh.points
     #tetras=msh.cells_dict["tetra"]
     #meshio.write_points_cells("brainmask_auto.vtk",nodes,[("tetra",tetras)])
-    
+
     mesh = meshio.read(dir_path+"/vMesh.vtk")
     meshio.write(outputModelFile,mesh)
-    
+
     print("----%s seconds ----"%(time.time()-start_time))
     logging.info('Processing completed')
 
