@@ -4,9 +4,7 @@ import logging
 import vtk, qt, ctk, slicer
 from slicer.ScriptedLoadableModule import *
 from slicer.util import VTKObservationMixin
-#import nrrd
 import numpy as np
-#import skfuzzy as fuzz
 #
 # FuzzyClassification
 #
@@ -189,16 +187,11 @@ class FuzzyClassificationWidget(ScriptedLoadableModuleWidget, VTKObservationMixi
     Run processing when user clicks "Apply" button.
     """
     try:
-        import nrrd
         import skfuzzy as fuzz
     except ModuleNotFoundError as e:
-        if slicer.util.confirmOkCancelDisplay("This module requires 'nrrd, skfuzzy' Python package. Click OK to install (it takes several minutes)."):
-            slicer.util.pip_install("pynrrd")
+        if slicer.util.confirmOkCancelDisplay("This module requires 'skfuzzy' Python package. Click OK to install (it takes several minutes)."):
             slicer.util.pip_install("scikit-fuzzy")
-            import nrrd
             import skfuzzy as fuzz
-            #slicer.util.pip_install("scikit-image")
-            #import tensorflow
 
     try:
       self.logic.run(self.ui.inputSelector.currentNode(), self.ui.outputSelector.currentNode(), self.ui.tumourSeg.currentNode(), self.ui.nClass.value)
@@ -295,52 +288,51 @@ class FuzzyClassificationLogic(ScriptedLoadableModuleLogic):
       raise ValueError("Input or output volume is invalid")
 
     logging.info('Processing started')
-    import nrrd
     import skfuzzy as fuzz
-    #dir_path = os.path.dirname(os.path.realpath(__file__))
-    #slicer.util.saveNode(slicer.util.getNode(inputVolume.GetID()), dir_path+"/brainImage.nrrd")
-    #brainMask, header = nrrd.read(dir_path+"/brainImage.nrrd")
 
     # Compute the thresholded output volume using the Threshold Scalar Volume CLI module
     #import math
 
     #add a check for the image size and the mask size using resample brain volume module
-    dir_path = os.path.dirname(os.path.realpath(__file__))
-    node = slicer.util.getNode(inputVolume.GetID())
-    slicer.util.saveNode(node, dir_path+"/brainVol.nrrd")
-    brain_img, header = nrrd.read(dir_path+"/brainVol.nrrd")
+    brainImageNode = slicer.util.getNode(inputVolume.GetID())
+    brain_img = slicer.util.arrayFromVolume(brainImageNode)
+    # FIXME: transpose is a workaround to keep tissue classes same as when temporary files were written using PyNRRD
+    #brain_img = brain_img.T
 
-    node = slicer.util.getNode(outputVolume.GetID())
-    slicer.util.saveNode(node, dir_path+"/brainMask.nrrd")
-    brain_mask, header = nrrd.read(dir_path+"/brainMask.nrrd")
+    volumesLogic = slicer.modules.volumes.logic()
+    mem1VentricleVolumeNode = volumesLogic.CloneVolume(slicer.mrmlScene, brainImageNode, "Membership 1 Ventricles")
+    mem2ParenchymaVolumeNode = volumesLogic.CloneVolume(slicer.mrmlScene, brainImageNode, "Membership 2 Parenchyma")
 
-
-    #mriImage = slicer.util.getNode(inputVolume.GetID())
-    #brainImg = slicer.util.arrayFromVolume(mriImage)
-
-    #maskImage = slicer.util.getNode(outputVolume.GetID())
-    #brainMask = slicer.util.arrayFromVolume(maskImage)
+    brainMaskNode = slicer.util.getNode(outputVolume.GetID())
+    brain_mask = slicer.util.arrayFromVolume(brainMaskNode)
+    # FIXME: transpose is a workaround to keep tissue classes same as when temporary files were written using PyNRRD
+    #brain_mask = brain_mask.T
 
     voxel_intensities = brain_img[brain_mask > 0]
     print(voxel_intensities)
 
     if nClass == 2:
-         ncenters = 2
-         cntr, u, u0, d, jm, p, fpc = fuzz.cluster.cmeans(voxel_intensities.reshape(1, voxel_intensities.size), ncenters, 2, error=0.005, maxiter=1000, init=None)
-         brain_ventricle_membership = np.zeros(brain_img.shape)
-         brain_ventricle_membership[brain_mask > 0] = u[0]
+        ncenters = 2
+        cntr, u, u0, d, jm, p, fpc = fuzz.cluster.cmeans(voxel_intensities.reshape(1, voxel_intensities.size), ncenters, 2, error=0.005, maxiter=1000, init=None)
+        brain_ventricle_membership = np.zeros(brain_img.shape)
+        brain_ventricle_membership[brain_mask > 0] = u[0]
 
-         print(u[0])
-         brain_parenchima_membership = np.ones(brain_img.shape)
-         brain_parenchima_membership[brain_mask > 0] = u[1]
+        print(u[0])
+        brain_parenchima_membership = np.ones(brain_img.shape)
+        brain_parenchima_membership[brain_mask > 0] = u[1]
 
-         nrrd.write(dir_path+"/mem1.nrrd", brain_ventricle_membership,header)
-         nrrd.write(dir_path+"/mem2.nrrd", brain_parenchima_membership,header)
-         slicer.util.loadVolume(dir_path+"/mem1.nrrd")
-         slicer.util.loadVolume(dir_path+"/mem2.nrrd")
+        # FIXME: transpose is a workaround to keep tissue classes same as when temporary files were written using PyNRRD
+        #brain_ventricle_membership = brain_ventricle_membership.T
+        #brain_parenchima_membership = brain_parenchima_membership.T
 
+        slicer.util.updateVolumeFromArray(mem1VentricleVolumeNode, brain_ventricle_membership)
+        slicer.util.updateVolumeFromArray(mem2ParenchymaVolumeNode, brain_parenchima_membership)
+        mem1VentricleVolumeNode.GetDisplayNode().SetWindowLevelMinMax(0, 1)
+        mem2ParenchymaVolumeNode.GetDisplayNode().SetWindowLevelMinMax(0, 1)
 
     else:
+        raise NotImplementedError("3 classes (parenchyma, ventricles and tumor) not implemented yet.")
+        # FIXME: Do not write temporary files in source directory. Create nodes instead (see above).
         print("inside")
         node = slicer.util.getNode(tumourSeg.GetID())
         slicer.util.saveNode(node, dir_path+"/tumour.nrrd")
