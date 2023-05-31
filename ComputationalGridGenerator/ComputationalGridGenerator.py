@@ -337,92 +337,15 @@ class ComputationalGridGeneratorLogic(ScriptedLoadableModuleLogic):
     addedSegmentID = segmentationNode.GetSegmentation().AddEmptySegment("cran")
     segmentEditorNode.SetSelectedSegmentID(addedSegmentID)
 
-    # thresholding
-    #getting bone threshold value min and maximum
-    import vtkITK
-    thresholdCalculator = vtkITK.vtkITKImageThresholdCalculator()
-    thresholdCalculator.SetInputData(inputVolume.GetImageData())
-    thresholdCalculator.SetMethodToOtsu()
-    thresholdCalculator.Update()
-    boneThresholdValue = thresholdCalculator.GetThreshold()
-    volumeScalarRange = inputVolume.GetImageData().GetScalarRange()
-    logging.info("Volume minimum = {0}, maximum = {1}, bone threshold = {2}".format(volumeScalarRange[0], volumeScalarRange[1], boneThresholdValue))
-
-
-    #applying threshold effect
+    # Create mask from volume using threshold effect
+    import numpy as np
     segmentEditorWidget.setActiveEffectByName("Threshold")
     effect = segmentEditorWidget.activeEffect()
-    effect.setParameter("MinimumThreshold",str(boneThresholdValue))
-    effect.setParameter("MaximumThreshold",str(volumeScalarRange[1]))
-    #effect.setParameter("MinimumThreshold",0.0)#11130.40)#9386.40)
-    #effect.setParameter("MaximumThreshold",0)#31049.00)#21807.00)
-    #effect.setParameter("AutoThresholdMethod", "OTSU")
-    #effect.setParameter("AutoThresholdMode","SET_UPPER")
+    effect.setParameter("MinimumThreshold", np.finfo(np.float64).eps)
+    effect.setParameter("MaximumThreshold", np.inf)
     effect.self().onApply()
 
-
-    #use shrink wrapping to wrap the bone and get the full surface
-    segmentEditorWidget.setActiveEffectByName("Wrap Solidify")
-    effect = segmentEditorWidget.activeEffect()
-    if effect is None:
-      slicer.util.errorDisplay(
-        "This module requires the 'Wrap Solidify' segment editor effect." \
-        " Please install the 'SurfaceWrapSolidify' extension," \
-        " restart 3D Slicer, and try again.")
-      return
-    segmentEditorWidget.setCurrentSegmentID(segmentationNode.GetSegmentation().GetSegmentIdBySegmentName("cran"))
-    effect.setParameter("region", "outerSurface")
-    #effect.setParameter("REGION_OUTER_SURFACE", "outerSurface")
-    #effect.setParameter("REGION_LARGEST_CAVITY", "largestCavity")
-    effect.setParameter("carveHolesInOuterSurface", True)
-    effect.setParameter("carveHolesInOuterSurfaceDiameter", 10)
-    effect.setParameter("smoothingFactor", 0.5)
-    effect.setParameter("shrinkwrapIterations", 9)
-    effect.setParameter("outputType", "segment")
-    #effect.setParameter("outputModelNode", segmentName)
-    effect.self().onApply()
-
-
-    #model maker module
-    """labelmapVolumeNode = slicer.mrmlScene.AddNewNodeByClass("vtkMRMLLabelMapVolumeNode")
-    slicer.modules.segmentations.logic().ExportVisibleSegmentsToLabelmapNode(segmentationNode, labelmapVolumeNode, inputVolume)
-    parameters = {}
-    parameters['Name'] = "model"
-    parameters["InputVolume"] = labelmapVolumeNode.GetID()
-    parameters['FilterType'] = "Laplacian"
-
-    # build only the currently selected model.
-    parameters['Labels'] = ""
-    parameters["StartLabel"] = -1
-    parameters["EndLabel"] = -1
-
-    parameters['GenerateAll'] = True
-    parameters["JointSmoothing"] = False
-    parameters["SplitNormals"] = False
-    parameters["PointNormals"] = False
-    parameters["SkipUnNamed"] = True
-
-
-    parameters["Decimate"] = 0.00
-    parameters["Smooth"] = 10
-
-
-    outHierarchy = slicer.vtkMRMLModelHierarchyNode()
-    outHierarchy.SetScene( slicer.mrmlScene )
-    outHierarchy.SetName( "Editor Models" )
-    slicer.mrmlScene.AddNode( outHierarchy )
-
-    parameters["ModelSceneFile"] = outHierarchy
-
-    modelMaker = slicer.modules.modelmaker
-
-    #self.CLINode = slicer.cli.run(modelMaker, self.CLINode, parameters)
-    slicer.cli.run(modelMaker, None, parameters)
-
-
-    #segmentationNode = slicer.util.loadSegmentation(labelmapVolumeNode)"""
     slicer.modules.segmentations.logic().ExportSegmentsClosedSurfaceRepresentationToFiles(fold_path, segmentationNode)
-
 
     #triangulation
     import gmsh
