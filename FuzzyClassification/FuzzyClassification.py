@@ -31,7 +31,7 @@ It module performs fuzzy classification and produces fuzzy classified ventricle,
 This file was originally developed by Jean-Christophe Fillion-Robin, Kitware Inc.
 and Steve Pieper, Isomics, Inc. and was partially funded by NIH grant 3P41RR013218-12S1.
 """  # TODO: replace with organization, grant and thanks.
-    
+
 
 #
 # FuzzyClassificationWidget
@@ -132,7 +132,7 @@ class FuzzyClassificationWidget(ScriptedLoadableModuleWidget, VTKObservationMixi
     wasBlocked = self.ui.outputSelector.blockSignals(True)
     self.ui.outputSelector.setCurrentNode(self._parameterNode.GetNodeReference("OutputVolume"))
     self.ui.outputSelector.blockSignals(wasBlocked)
-    
+
     wasBlocked = self.ui.tumourSeg.blockSignals(True)
     self.ui.tumourSeg.setCurrentNode(self._parameterNode.GetNodeReference("tumourSeg"))
     self.ui.tumourSeg.blockSignals(wasBlocked)
@@ -140,11 +140,11 @@ class FuzzyClassificationWidget(ScriptedLoadableModuleWidget, VTKObservationMixi
     #wasBlocked = self.ui.imageThresholdSliderWidget.blockSignals(True)
     #self.ui.imageThresholdSliderWidget.value = float(self._parameterNode.GetParameter("Threshold"))
     #self.ui.imageThresholdSliderWidget.blockSignals(wasBlocked)
-    
+
     wasBlocked = self.ui.nClass.blockSignals(True)
     self.ui.nClass.value = int(self._parameterNode.GetParameter("nnClass"))
     self.ui.nClass.blockSignals(wasBlocked)
-    
+
     """if(self.ui.nClass.value == 2):
         self.ui.ventricle_file.enabled = True
         self.ui.paren_file.enabled = True
@@ -154,7 +154,7 @@ class FuzzyClassificationWidget(ScriptedLoadableModuleWidget, VTKObservationMixi
         self.ui.ventricle_file.enabled = True
         self.ui.paren_file.enabled = True
         self.ui.tumor_file.enabled = True"""
-        
+
     #wasBlocked = self.ui.invertOutputCheckBox.blockSignals(True)
     #self.ui.invertOutputCheckBox.checked = (self._parameterNode.GetParameter("Invert") == "true")
     #self.ui.invertOutputCheckBox.blockSignals(wasBlocked)
@@ -190,7 +190,7 @@ class FuzzyClassificationWidget(ScriptedLoadableModuleWidget, VTKObservationMixi
     """
     try:
         import nrrd
-        import skfuzzy as fuzz       
+        import skfuzzy as fuzz
     except ModuleNotFoundError as e:
         if slicer.util.confirmOkCancelDisplay("This module requires 'nrrd, skfuzzy' Python package. Click OK to install (it takes several minutes)."):
             slicer.util.pip_install("pynrrd")
@@ -199,7 +199,7 @@ class FuzzyClassificationWidget(ScriptedLoadableModuleWidget, VTKObservationMixi
             import skfuzzy as fuzz
             #slicer.util.pip_install("scikit-image")
             #import tensorflow
-            
+
     try:
       self.logic.run(self.ui.inputSelector.currentNode(), self.ui.outputSelector.currentNode(), self.ui.tumourSeg.currentNode(), self.ui.nClass.value)
     except Exception as e:
@@ -228,8 +228,8 @@ class FuzzyClassificationLogic(ScriptedLoadableModuleLogic):
     if not parameterNode.GetParameter("Invert"):
       parameterNode.SetParameter("Invert", "false")
     if not parameterNode.GetParameter("nnClass"):
-      parameterNode.SetParameter("nnClass", "2")  
-  
+      parameterNode.SetParameter("nnClass", "2")
+
   def createEmptyVolume(self, imageSize, imageSpacing, nodeName):
     voxelType=vtk.VTK_SHORT
     # Create an empty image volume
@@ -247,8 +247,8 @@ class FuzzyClassificationLogic(ScriptedLoadableModuleLogic):
     volumeNode.SetAndObserveImageData(thresholder.GetOutput())
     volumeNode.CreateDefaultDisplayNodes()
     volumeNode.CreateDefaultStorageNode()
-    return volumeNode 
- 
+    return volumeNode
+
   def performVesselness(self, inputNode, brain_ventricle, cutSpacing, createTempVolumes):
     import math
     inputImageArray = brain_ventricle
@@ -293,7 +293,7 @@ class FuzzyClassificationLogic(ScriptedLoadableModuleLogic):
 
     if not inputVolume or not outputVolume:
       raise ValueError("Input or output volume is invalid")
-      
+
     logging.info('Processing started')
     import nrrd
     import skfuzzy as fuzz
@@ -303,43 +303,43 @@ class FuzzyClassificationLogic(ScriptedLoadableModuleLogic):
 
     # Compute the thresholded output volume using the Threshold Scalar Volume CLI module
     #import math
-    
+
     #add a check for the image size and the mask size using resample brain volume module
     dir_path = os.path.dirname(os.path.realpath(__file__))
     node = slicer.util.getNode(inputVolume.GetID())
     slicer.util.saveNode(node, dir_path+"/brainVol.nrrd")
     brain_img, header = nrrd.read(dir_path+"/brainVol.nrrd")
-    
+
     node = slicer.util.getNode(outputVolume.GetID())
     slicer.util.saveNode(node, dir_path+"/brainMask.nrrd")
     brain_mask, header = nrrd.read(dir_path+"/brainMask.nrrd")
-    
-    
+
+
     #mriImage = slicer.util.getNode(inputVolume.GetID())
     #brainImg = slicer.util.arrayFromVolume(mriImage)
-    
+
     #maskImage = slicer.util.getNode(outputVolume.GetID())
     #brainMask = slicer.util.arrayFromVolume(maskImage)
-    
+
     voxel_intensities = brain_img[brain_mask > 0]
     print(voxel_intensities)
-    
+
     if nClass == 2:
          ncenters = 2
          cntr, u, u0, d, jm, p, fpc = fuzz.cluster.cmeans(voxel_intensities.reshape(1, voxel_intensities.size), ncenters, 2, error=0.005, maxiter=1000, init=None)
          brain_ventricle_membership = np.zeros(brain_img.shape)
          brain_ventricle_membership[brain_mask > 0] = u[0]
-        
+
          print(u[0])
          brain_parenchima_membership = np.ones(brain_img.shape)
          brain_parenchima_membership[brain_mask > 0] = u[1]
-        
+
          nrrd.write(dir_path+"/mem1.nrrd", brain_ventricle_membership,header)
          nrrd.write(dir_path+"/mem2.nrrd", brain_parenchima_membership,header)
          slicer.util.loadVolume(dir_path+"/mem1.nrrd")
          slicer.util.loadVolume(dir_path+"/mem2.nrrd")
-         
-     
+
+
     else:
         print("inside")
         node = slicer.util.getNode(tumourSeg.GetID())
@@ -348,19 +348,19 @@ class FuzzyClassificationLogic(ScriptedLoadableModuleLogic):
 
         #initialise tumour membership function
         back_membership = np.zeros(back_mask.shape)
-        
+
         av,bv,cv = back_mask.shape
-        
+
         for i in range (0, av):
             for j in range (0, bv):
                 for k in range (0, cv):
                     if back_mask[i,j,k] > 0:
                         back_membership[i,j,k] = 1
-                        
+
         nrrd.write(dir_path+"/tumour_membership.nrrd", back_membership, header)
         #nrrd.write(tFile, back_membership, header)
-        
-        
+
+
         brain_img, header = nrrd.read(dir_path+"/brainVol.nrrd")
         brain_mask, header = nrrd.read(dir_path+"/brainMask.nrrd")
         print("inside2")
@@ -370,25 +370,25 @@ class FuzzyClassificationLogic(ScriptedLoadableModuleLogic):
 
         membership_1 = np.zeros(brain_img.shape)
         membership_1[brain_mask > 0] = u[0]
-        
+
         membership_2 = np.zeros(brain_img.shape)
         membership_2[brain_mask > 0] = u[1]
-        
+
         membership_3 = np.zeros(brain_img.shape)
         membership_3[brain_mask > 0] = u[2]
-        
+
         membership_4 = np.zeros(brain_img.shape)
         membership_4[brain_mask > 0] = u[3]
-        
+
         membership_5 = np.zeros(brain_img.shape)
         membership_5[brain_mask > 0] = u[4]
-    
+
         nrrd.write(dir_path+"/membership_1.nrrd", membership_1, header)
         nrrd.write(dir_path+"/membership_2.nrrd", membership_2, header)
         nrrd.write(dir_path+"/membership_3.nrrd", membership_3, header)
         nrrd.write(dir_path+"/membership_4.nrrd", membership_4, header)
         nrrd.write(dir_path+"/membership_5.nrrd", membership_5, header)
-        
+
         tumour_membership, header = nrrd.read(dir_path+"/tumour_membership.nrrd")
 
         membership_1, header = nrrd.read(dir_path+"/membership_1.nrrd")
@@ -396,7 +396,7 @@ class FuzzyClassificationLogic(ScriptedLoadableModuleLogic):
         membership_3, header = nrrd.read(dir_path+"/membership_3.nrrd")
         membership_4, header = nrrd.read(dir_path+"/membership_4.nrrd")
         membership_5, header = nrrd.read(dir_path+"/membership_5.nrrd")
-        
+
         av,bv,cv = membership_1.shape
         for i in range (0, av):
             for j in range (0, bv):
@@ -407,7 +407,7 @@ class FuzzyClassificationLogic(ScriptedLoadableModuleLogic):
                         membership_3[i,j,k] = 0
                         membership_4[i,j,k] = 0
                         membership_5[i,j,k] = 0
-                        
+
         nrrd.write(dir_path+"/membership_1.nrrd", membership_1, header)
         nrrd.write(dir_path+"/membership_2.nrrd", membership_2, header)
         nrrd.write(dir_path+"/membership_3.nrrd", membership_3, header)
@@ -419,10 +419,10 @@ class FuzzyClassificationLogic(ScriptedLoadableModuleLogic):
         slicer.util.loadVolume(dir_path+"/membership_3.nrrd")
         slicer.util.loadVolume(dir_path+"/membership_4.nrrd")
         slicer.util.loadVolume(dir_path+"/membership_5.nrrd")
-        
 
-        
-        
+
+
+
     #slicer.util.loadVolume(vFile)
     #slicer.util.loadVolume(pFile)
     #dim = inputVolume.GetImageData().GetDimensions()
@@ -440,12 +440,12 @@ class FuzzyClassificationLogic(ScriptedLoadableModuleLogic):
     #ijkToRAS = vtk.vtkMatrix4x4()
     #inputVolume.GetIJKToRASMatrix(ijkToRAS)
     #outputNode.SetIJKToRASMatrix(ijkToRAS)
-    #outputVolume = self.performVesselness(inputVolume, brain_ventricle_membership,  [20,20,20], False) 
+    #outputVolume = self.performVesselness(inputVolume, brain_ventricle_membership,  [20,20,20], False)
     #slicer.util.updateVolumeFromArray(outputVolume, brain_ventricle_membership)
     #v = outputVolume
     #v.GetImageData().GetPointData().GetScalars().Modified()
     #v.Modified()
-    
+
     #setSliceViewerLayers(background=volumeNode)
     logging.info('Processing completed')
 
