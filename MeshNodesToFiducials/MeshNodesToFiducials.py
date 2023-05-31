@@ -3,7 +3,6 @@ import unittest
 import vtk, qt, ctk, slicer
 from slicer.ScriptedLoadableModule import *
 import logging
-import gmsh_api
 #
 # MeshNodesToFiducials
 #
@@ -443,9 +442,7 @@ class MeshNodesToFiducialsLogic(ScriptedLoadableModuleLogic):
       import time
       start_time = time.time()
 
-      import math
-      import gmsh_api
-      import gmsh_api.gmsh as gmsh
+      import gmsh
 
       gmsh.initialize()
       gmsh.option.setNumber("General.Terminal", 1)
