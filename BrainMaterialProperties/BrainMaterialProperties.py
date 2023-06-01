@@ -71,7 +71,7 @@ class BrainMaterialPropertiesWidget(ScriptedLoadableModuleWidget, VTKObservation
 
     self.ui.inputSelector.connect("currentNodeChanged(vtkMRMLNode*)", self.updateParameterNodeFromGUI)
     self.ui.outputSelector.connect("currentNodeChanged(vtkMRMLNode*)", self.updateParameterNodeFromGUI)
-   
+
 
     self.ui.applyButton.connect('clicked(bool)', self.onApplyButton)
 
@@ -112,7 +112,7 @@ class BrainMaterialPropertiesWidget(ScriptedLoadableModuleWidget, VTKObservation
 
     # Disable all sections if no parameter node is selected
     self.ui.basicCollapsibleButton.enabled = self._parameterNode is not None
-    
+
     if self._parameterNode is None:
       return
 
@@ -126,7 +126,7 @@ class BrainMaterialPropertiesWidget(ScriptedLoadableModuleWidget, VTKObservation
     self.ui.outputSelector.setCurrentNode(self._parameterNode.GetNodeReference("OutputVolume"))
     self.ui.outputSelector.blockSignals(wasBlocked)
 
-    
+
 
     # Update buttons states and tooltips
     if self._parameterNode.GetNodeReference("InputVolume") and self._parameterNode.GetNodeReference("OutputVolume"):
@@ -147,7 +147,7 @@ class BrainMaterialPropertiesWidget(ScriptedLoadableModuleWidget, VTKObservation
 
     self._parameterNode.SetNodeReferenceID("InputVolume", self.ui.inputSelector.currentNodeID)
     self._parameterNode.SetNodeReferenceID("OutputVolume", self.ui.outputSelector.currentNodeID)
-   
+
 
   def onApplyButton(self):
     """
@@ -156,7 +156,7 @@ class BrainMaterialPropertiesWidget(ScriptedLoadableModuleWidget, VTKObservation
     try:
         import mvloader.nrrd as mvnrrd
         import nrrd
-        import numpy as np     
+        import numpy as np
     except ModuleNotFoundError as e:
         if slicer.util.confirmOkCancelDisplay("This module requires 'nrrd, skfuzzy' Python package. Click OK to install (it takes several minutes)."):
             slicer.util.pip_install("git+https://github.com/spezold/mvloader.git")
@@ -203,7 +203,7 @@ class BrainMaterialPropertiesLogic(ScriptedLoadableModuleLogic):
     logging.info('Processing started')
     import mvloader.nrrd as mvnrrd
     import nrrd
-    import numpy as np   
+    import numpy as np
     print(mat)
     print(matFile)
     print(intFile)
@@ -218,34 +218,34 @@ class BrainMaterialPropertiesLogic(ScriptedLoadableModuleLogic):
     dir_path = os.path.dirname(os.path.realpath(__file__))
     node = slicer.util.getNode(inputVolume.GetID())
     slicer.util.saveNode(node, dir_path+"/mem1.nrrd")
-    
+
     node = slicer.util.getNode(outputVolume.GetID())
     slicer.util.saveNode(node, dir_path+"/tumour.nrrd")
-    
+
     cNumber = int(cNumber)
     if mat=="Neo-Hookean" and cNumber==2:
         print("neo")
-        
+
         #brain_ventricle_membership, header = nrrd.read(dir_path+"/mem1.nrrd")
-    
+
         brain_ventricle_membership_volume = mvnrrd.open_image(dir_path+"/mem1.nrrd")
-    
+
         brain_ventricle_membership = brain_ventricle_membership_volume.src_data
         # Create transform from world coordinates to voxel indeces
         voxels2world = brain_ventricle_membership_volume.src_transformation
         world2voxels = np.linalg.inv(voxels2world)
-    
+
         homogeneous = lambda c3d: np.r_[c3d, 1]  # append 1 to 3D coordinate
-    
+
         # Define material properties for each tissue
         YM_parenchima = 3000
-        YM_ventricles = 100 
-    
+        YM_ventricles = 100
+
         PR_V = 0.10
         PR_B = 0.49
-        density = 1000 
-        
-        
+        density = 1000
+
+
         import pandas as pd
         # Read integration points
         ips = np.genfromtxt(intFile, delimiter=',')
@@ -253,7 +253,7 @@ class BrainMaterialPropertiesLogic(ScriptedLoadableModuleLogic):
         # Create material properties for each ip
         material_props = np.zeros([num_ips, 3])
         material_props[:,0] = density
-       
+
         for idx, ip in enumerate(ips):
             x = np.array([-1000*ip[0], -1000*ip[1], 1000*ip[2]])
             voxel_idxs = world2voxels[:3] @ homogeneous(x)
@@ -261,15 +261,15 @@ class BrainMaterialPropertiesLogic(ScriptedLoadableModuleLogic):
             for i in range(iv-1, iv+1):
                 for j in range(jv-1, jv+1):
                     for k in range(kv-1, kv+1):
-                        material_props[idx, 1] += YM_parenchima *(1-brain_ventricle_membership[i, j, k])+YM_ventricles * brain_ventricle_membership[i, j, k]             
+                        material_props[idx, 1] += YM_parenchima *(1-brain_ventricle_membership[i, j, k])+YM_ventricles * brain_ventricle_membership[i, j, k]
                         material_props[idx, 2] += PR_B * (1-brain_ventricle_membership[i, j, k])+PR_V * brain_ventricle_membership[i, j, k]
-             
-            
+
+
             material_props[idx, 1]/= 8
             material_props[idx, 2]/= 8
             if material_props[idx, 1] == 0:
                 print("YM is 0 for ip %d" % idx)
-             
+
         np.savetxt(matFile, material_props, fmt = "%.8f, %.8f, %.8f", newline='\n')
     elif mat=="Neo-Hookean" and cNumber==3:
         print("neo 3")
@@ -277,25 +277,25 @@ class BrainMaterialPropertiesLogic(ScriptedLoadableModuleLogic):
         tumour_membership, header = nrrd.read(dir_path+"/tumour.nrrd")
 
         brain_ventricle_membership_volume = mvnrrd.open_image(dir_path+"/mem1.nrrd")
-    
+
         brain_ventricle_membership = brain_ventricle_membership_volume.src_data
         # Create transform from world coordinates to voxel indeces
         voxels2world = brain_ventricle_membership_volume.src_transformation
         world2voxels = np.linalg.inv(voxels2world)
-    
+
         homogeneous = lambda c3d: np.r_[c3d, 1]  # append 1 to 3D coordinate
-    
+
         # Define material properties for each tissue
         YM_parenchima = 3000
-        YM_ventricles = 100 
+        YM_ventricles = 100
         YM_tumour = 9000
-    
+
         PR_V = 0.10
         PR_B = 0.49
         PR_T = 0.49
-        density = 1000 
-        
-        
+        density = 1000
+
+
         import pandas as pd
         # Read integration points
         ips = np.genfromtxt(intFile, delimiter=',')
@@ -303,7 +303,7 @@ class BrainMaterialPropertiesLogic(ScriptedLoadableModuleLogic):
         # Create material properties for each ip
         material_props = np.zeros([num_ips, 3])
         material_props[:,0] = density
-       
+
         for idx, ip in enumerate(ips):
             x = np.array([-1000*ip[0], -1000*ip[1], 1000*ip[2]])
             voxel_idxs = world2voxels[:3] @ homogeneous(x)
@@ -311,51 +311,51 @@ class BrainMaterialPropertiesLogic(ScriptedLoadableModuleLogic):
             for i in range(iv-1, iv+1):
                 for j in range(jv-1, jv+1):
                     for k in range(kv-1, kv+1):
-                        material_props[idx, 1] += YM_parenchima *(1-brain_ventricle_membership[i, j, k]-tumour_membership[i,j,k]) + YM_tumour * tumour_membership[i,j,k] + YM_ventricles * brain_ventricle_membership[i, j, k]             
+                        material_props[idx, 1] += YM_parenchima *(1-brain_ventricle_membership[i, j, k]-tumour_membership[i,j,k]) + YM_tumour * tumour_membership[i,j,k] + YM_ventricles * brain_ventricle_membership[i, j, k]
                         material_props[idx, 2] += PR_B * (1-brain_ventricle_membership[i, j, k]-tumour_membership[i,j,k])+ PR_T * tumour_membership[i,j,k] + PR_V * brain_ventricle_membership[i, j, k]
-             
-            
+
+
             material_props[idx, 1]/= 8
             material_props[idx, 2]/= 8
             if material_props[idx, 1] == 0:
                 print("YM is 0 for ip %d" % idx)
-             
+
         np.savetxt(matFile, material_props, fmt = "%.8f, %.8f, %.8f", newline='\n')
     else:
         print("ogden")
         ventricle_membership_volume = mvnrrd.open_image(dir_path+"/mem1.nrrd")
         ventricle_membership = ventricle_membership_volume.src_data
         tumour_membership, header = nrrd.read(dir_path+"/tumour.nrrd")
-        
+
         voxels2world = ventricle_membership_volume.src_transformation
         world2voxels = np.linalg.inv(voxels2world)
-        
+
         homogeneous = lambda c3d: np.r_[c3d, 1]
-        
+
         parenchyma_SM = 842
         tumour_SM = 842*3
         CSF_SM = 4.54
-        
+
         D_parenchima = 4.78e-05
         D_tumour = 1.59e-5
         #D_ventricle = 0.48058
         #D_ventricle = 0.008869704047541623
         D_ventricle = 0.008
-        
-        
+
+
         parenchyma_alpha = -4.7
         tumour_alpha = -4.7
         CSF_alpha = 2
-        
+
         density = 1000
-        
+
         #read integration points
         ips = np.genfromtxt(intFile, delimiter = ',')
         num_ips = ips.shape[0]
-        
+
         material_props = np.zeros([num_ips, 4])
         material_props[:,0] = density
-        
+
         for idx, ip in enumerate(ips):
             x = np.array([-1000*ip[0], -1000*ip[1], 1000*ip[2]])
             voxel_idxs = world2voxels[:3] @ homogeneous(x)
@@ -363,41 +363,41 @@ class BrainMaterialPropertiesLogic(ScriptedLoadableModuleLogic):
             for i in range(iv-1, iv+1):
                 for j in range(jv-1, jv+1):
                     for k in range(kv-1, kv+1):
-                        #for shear modulus 
+                        #for shear modulus
                         if ventricle_membership[i,j,k] < 0.1:
                             ventricle_membership[i,j,k] = 0
-                            
+
                         if  tumour_membership[i,j,k] != 0 or ventricle_membership[i,j,k] != 0:
-                            
-                            material_props[idx, 1] += parenchyma_SM * (1-tumour_membership[i,j,k]-ventricle_membership[i,j,k] ) + tumour_SM * tumour_membership[i,j,k] + CSF_SM * ventricle_membership[i,j,k] 
+
+                            material_props[idx, 1] += parenchyma_SM * (1-tumour_membership[i,j,k]-ventricle_membership[i,j,k] ) + tumour_SM * tumour_membership[i,j,k] + CSF_SM * ventricle_membership[i,j,k]
                             material_props[idx, 2] += parenchyma_alpha * (1-tumour_membership[i,j,k]-ventricle_membership[i,j,k] ) + tumour_alpha * tumour_membership[i,j,k] + CSF_alpha * ventricle_membership[i,j,k]
                             material_props[idx, 3] += D_parenchima * (1-tumour_membership[i,j,k]-ventricle_membership[i,j,k] ) + D_tumour * tumour_membership[i,j,k] + D_ventricle * ventricle_membership[i,j,k]
-                        
+
                         if tumour_membership[i,j,k] == 0 and ventricle_membership[i,j,k] == 0:
-                            
-                            material_props[idx, 1] += parenchyma_SM * 1                             
+
+                            material_props[idx, 1] += parenchyma_SM * 1
                             material_props[idx, 2] += parenchyma_alpha * 1
                             material_props[idx, 3] += D_parenchima * 1
-                            
-                            
-                            
-            material_props[idx, 1] /= 8                
-            material_props[idx, 2] /= 8                   
-            material_props[idx, 3] /= 8   
-            
+
+
+
+            material_props[idx, 1] /= 8
+            material_props[idx, 2] /= 8
+            material_props[idx, 3] /= 8
+
             if material_props[idx, 1] == 0:
                 print("SM is 0 for ip %d" % idx)
             if material_props[idx, 2] == 0:
                 print("A is 0 for ip %d" % idx)
             if material_props[idx, 3] == 0:
                 print("D is 0 for ip %d" % idx)
-        
-        
-                         
-                        
+
+
+
+
         # Save material properties
-        np.savetxt(matFile, material_props, fmt = "%.1f, %.8f, %.8f, %.8f", newline='\n')               
-                
+        np.savetxt(matFile, material_props, fmt = "%.1f, %.8f, %.8f, %.8f", newline='\n')
+
 
     logging.info('Processing completed')
 
