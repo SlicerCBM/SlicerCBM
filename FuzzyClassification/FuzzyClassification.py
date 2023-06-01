@@ -223,61 +223,6 @@ class FuzzyClassificationLogic(ScriptedLoadableModuleLogic):
     if not parameterNode.GetParameter("nnClass"):
       parameterNode.SetParameter("nnClass", "2")
 
-  def createEmptyVolume(self, imageSize, imageSpacing, nodeName):
-    voxelType=vtk.VTK_SHORT
-    # Create an empty image volume
-    imageData=vtk.vtkImageData()
-    imageData.SetDimensions(imageSize)
-    imageData.AllocateScalars(voxelType, 1)
-    thresholder=vtk.vtkImageThreshold()
-    thresholder.SetInputData(imageData)
-    thresholder.SetInValue(0)
-    thresholder.SetOutValue(0)
-    thresholder.Update()
-    # Create volume node
-    volumeNode=slicer.mrmlScene.AddNewNodeByClass("vtkMRMLScalarVolumeNode", nodeName)
-    volumeNode.SetSpacing(imageSpacing)
-    volumeNode.SetAndObserveImageData(thresholder.GetOutput())
-    volumeNode.CreateDefaultDisplayNodes()
-    volumeNode.CreateDefaultStorageNode()
-    return volumeNode
-
-  def performVesselness(self, inputNode, brain_ventricle, cutSpacing, createTempVolumes):
-    import math
-    inputImageArray = brain_ventricle
-    dim = inputNode.GetImageData().GetDimensions()
-    spacing = inputNode.GetSpacing()
-    numOfSlices = [0,0,0]
-    for i in range(3):
-      numOfSlices[i] = int(math.ceil(dim[i] / cutSpacing[i]))
-    print(numOfSlices)
-    outputNode = self.createEmptyVolume(dim, spacing, 'VesselnessFiltered')
-    outputImageArray = slicer.util.arrayFromVolume(outputNode).copy()
-    for ii in range(numOfSlices[0]):
-      xMin = ii * cutSpacing[0]
-      xMax = min((ii + 1) * cutSpacing[0], dim[0])
-      for jj in range(numOfSlices[1]):
-        yMin = jj * cutSpacing[1]
-        yMax = min((jj + 1) * cutSpacing[1], dim[1])
-        for kk in range(numOfSlices[2]):
-          zMin = kk * cutSpacing[2]
-          zMax = min((kk + 1) * cutSpacing[2], dim[2])
-          tileDim = [xMax-xMin, yMax-yMin, zMax-zMin]
-          if createTempVolumes:
-            tempVolume = self.createEmptyVolume(tileDim, spacing, 'tempV')
-            tempVolumeArray = slicer.util.arrayFromVolume(tempVolume)
-            tempVolumeArray[:] = inputImageArray[zMin:zMax, yMin:yMax, xMin:xMax]
-            outputImageArray[zMin:zMax, yMin:yMax, xMin:xMax] = tempVolumeArray
-            slicer.mrmlScene.RemoveNode(tempVolume)
-          else:
-            outputImageArray[zMin:zMax, yMin:yMax, xMin:xMax] = inputImageArray[zMin:zMax, yMin:yMax, xMin:xMax]
-    slicer.util.updateVolumeFromArray(outputNode, outputImageArray)
-    # Copy origin, spacing, axis directions
-    ijkToRAS = vtk.vtkMatrix4x4()
-    inputNode.GetIJKToRASMatrix(ijkToRAS)
-    outputNode.SetIJKToRASMatrix(ijkToRAS)
-    return outputNode
-
   def run(self, inputVolume, outputVolume, tumourSeg,  nClass):
     """
     Run the processing algorithm.
@@ -405,32 +350,6 @@ class FuzzyClassificationLogic(ScriptedLoadableModuleLogic):
         slicer.util.loadVolume(dir_path+"/membership_3.nrrd")
         slicer.util.loadVolume(dir_path+"/membership_4.nrrd")
         slicer.util.loadVolume(dir_path+"/membership_5.nrrd")
-
-
-
-
-    #slicer.util.loadVolume(vFile)
-    #slicer.util.loadVolume(pFile)
-    #dim = inputVolume.GetImageData().GetDimensions()
-    #spacing = inputVolume.GetSpacing()
-    #numOfSlices = [0,0,0]
-    #for i in range(3):
-    #  numOfSlices[i] = int(math.ceil(dim[i] / cutSpacing[i]))
-    #print(numOfSlices)
-    #outputNode = self.createEmptyVolume(dim, spacing, 'newVolume')
-    #outputImageArray = slicer.util.arrayFromVolume(outputNode).copy()
-    #volumeNode = slicer.mrmlScene.AddNewNodeByClass('vtkMRMLScalarVolumeNode')
-    #volumeNode = slicer.modules.volumes.logic().CloneVolume(mriImage, "Difference")
-    #volumeNode.CreateDefaultDisplayNodes()
-    #slicer.util.updateVolumeFromArray(outputNode, brain_ventricle_membership)
-    #ijkToRAS = vtk.vtkMatrix4x4()
-    #inputVolume.GetIJKToRASMatrix(ijkToRAS)
-    #outputNode.SetIJKToRASMatrix(ijkToRAS)
-    #outputVolume = self.performVesselness(inputVolume, brain_ventricle_membership,  [20,20,20], False)
-    #slicer.util.updateVolumeFromArray(outputVolume, brain_ventricle_membership)
-    #v = outputVolume
-    #v.GetImageData().GetPointData().GetScalars().Modified()
-    #v.Modified()
 
     #setSliceViewerLayers(background=volumeNode)
     logging.info('Processing completed')
