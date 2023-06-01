@@ -284,29 +284,25 @@ class FuzzyClassificationLogic(ScriptedLoadableModuleLogic):
     Can be used without GUI widget.
     """
 
+    # FIXME: update this...
     if not inputVolume or not outputVolume:
       raise ValueError("Input or output volume is invalid")
 
     logging.info('Processing started')
     import skfuzzy as fuzz
 
-    # Compute the thresholded output volume using the Threshold Scalar Volume CLI module
-    #import math
-
+    # FIXME: why is this needed?
     #add a check for the image size and the mask size using resample brain volume module
+
     brainImageNode = slicer.util.getNode(inputVolume.GetID())
     brain_img = slicer.util.arrayFromVolume(brainImageNode)
-    # FIXME: transpose is a workaround to keep tissue classes same as when temporary files were written using PyNRRD
-    #brain_img = brain_img.T
 
     volumesLogic = slicer.modules.volumes.logic()
-    mem1VentricleVolumeNode = volumesLogic.CloneVolume(slicer.mrmlScene, brainImageNode, "Membership 1 Ventricles")
-    mem2ParenchymaVolumeNode = volumesLogic.CloneVolume(slicer.mrmlScene, brainImageNode, "Membership 2 Parenchyma")
+    mem0VolumeNode = volumesLogic.CloneVolume(slicer.mrmlScene, brainImageNode, "Membership 0")
+    mem1VolumeNode = volumesLogic.CloneVolume(slicer.mrmlScene, brainImageNode, "Membership 1")
 
     brainMaskNode = slicer.util.getNode(outputVolume.GetID())
     brain_mask = slicer.util.arrayFromVolume(brainMaskNode)
-    # FIXME: transpose is a workaround to keep tissue classes same as when temporary files were written using PyNRRD
-    #brain_mask = brain_mask.T
 
     voxel_intensities = brain_img[brain_mask > 0]
     print(voxel_intensities)
@@ -314,21 +310,19 @@ class FuzzyClassificationLogic(ScriptedLoadableModuleLogic):
     if nClass == 2:
         ncenters = 2
         cntr, u, u0, d, jm, p, fpc = fuzz.cluster.cmeans(voxel_intensities.reshape(1, voxel_intensities.size), ncenters, 2, error=0.005, maxiter=1000, init=None)
-        brain_ventricle_membership = np.zeros(brain_img.shape)
-        brain_ventricle_membership[brain_mask > 0] = u[0]
 
-        print(u[0])
-        brain_parenchima_membership = np.ones(brain_img.shape)
-        brain_parenchima_membership[brain_mask > 0] = u[1]
+        membership0 = np.zeros(brain_img.shape)
+        membership1 = np.zeros(brain_img.shape)
 
-        # FIXME: transpose is a workaround to keep tissue classes same as when temporary files were written using PyNRRD
-        #brain_ventricle_membership = brain_ventricle_membership.T
-        #brain_parenchima_membership = brain_parenchima_membership.T
+        membership0[brain_mask > 0] = u[0]
+        membership1[brain_mask > 0] = u[1]
 
-        slicer.util.updateVolumeFromArray(mem1VentricleVolumeNode, brain_ventricle_membership)
-        slicer.util.updateVolumeFromArray(mem2ParenchymaVolumeNode, brain_parenchima_membership)
-        mem1VentricleVolumeNode.GetDisplayNode().SetWindowLevelMinMax(0, 1)
-        mem2ParenchymaVolumeNode.GetDisplayNode().SetWindowLevelMinMax(0, 1)
+        slicer.util.updateVolumeFromArray(mem0VolumeNode, membership0)
+        slicer.util.updateVolumeFromArray(mem1VolumeNode, membership1)
+
+        # FIXME: update the levels automatically
+        mem0VolumeNode.GetDisplayNode().SetWindowLevelMinMax(0, 1)
+        mem1VolumeNode.GetDisplayNode().SetWindowLevelMinMax(0, 1)
 
     else:
         raise NotImplementedError("3 classes (parenchyma, ventricles and tumor) not implemented yet.")
