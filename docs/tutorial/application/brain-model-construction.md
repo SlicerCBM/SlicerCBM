@@ -182,27 +182,31 @@ steps are as follows:
 ![Fuzzy classification module along with classification results within
 3D Slicer.](./figs/fuzzy.png){#fig:fuzzy width="\\textwidth"}
 
-## Fuzzy classification for assigning material properties to integration points
+## Fuzzy classification for assigning material properties
 
 The steps are as follows:
 
-1.  Select "FuzzyClassification" module.
+1.  Select the "FuzzyClassification" module.
 
 2.  Select the "Input Volume" as the original MRI image volume.
 
 3.  Select the "Input Mask Volume", which is the brain mask volume
-    extracted using FreeSurfer and loaded into the 3D Slicer.
+    extracted using skull stripping.
 
-4.  Select the "Input tumour Mask (Segmentation)", which is the tumour
+4.  If tumor is present, select the "Input tumour Mask (Segmentation)", which is the tumour
     mask if the tumour is present.
 
-5.  Select the "Number of Classes" (2 or 3). Two classes for ventricles
+5.  Select the "Number of Classes" (2 or 3). Two classes for CSF
     and parenchyma and if tumour is present then three classes.
 
-6.  Hit "Apply", the results are the ".nrrd" volumes for each class
+6.  Click "Apply", the results are scalar volumes for the membership of each class
     (ventricles, parenchyma and tumour (if present)).
 
-## Material properties assignment
+7.  Rename the generated volumes ("Membership 0", "Membership 1", etc.)
+    as e.g. "Membership Parenchyma", "Membership CSF" as determined
+    by visual inspection of the volumes.
+
+## Material properties assignment to integration points
 
 For assigning the material properties to integration points for
 different tissues, we have used the following steps:
