@@ -154,16 +154,6 @@ class BrainMaterialPropertiesWidget(ScriptedLoadableModuleWidget, VTKObservation
     Run processing when user clicks "Apply" button.
     """
     try:
-        import mvloader.nrrd as mvnrrd
-        import nrrd
-        import numpy as np
-    except ModuleNotFoundError as e:
-        if slicer.util.confirmOkCancelDisplay("This module requires 'nrrd, skfuzzy' Python package. Click OK to install (it takes several minutes)."):
-            slicer.util.pip_install("git+https://github.com/spezold/mvloader.git")
-            slicer.util.pip_install("pynrrd")
-            import nrrd
-            import mvloader.nrrd as mvnrrd
-    try:
       self.logic.run(self.ui.inputSelector.currentNode(), self.ui.outputSelector.currentNode(), self.ui.cNumber.value, self.ui.mat.currentText, self.ui.intFile.currentPath, self.ui.matFile.currentPath)
     except Exception as e:
       slicer.util.errorDisplay("Failed to compute results: "+str(e))
@@ -201,8 +191,6 @@ class BrainMaterialPropertiesLogic(ScriptedLoadableModuleLogic):
       raise ValueError("Input or output volume is invalid")
 
     logging.info('Processing started')
-    import mvloader.nrrd as mvnrrd
-    import nrrd
     import numpy as np
     print(mat)
     print(matFile)
@@ -216,37 +204,33 @@ class BrainMaterialPropertiesLogic(ScriptedLoadableModuleLogic):
       }
     cliNode = slicer.cli.run(slicer.modules.thresholdscalarvolume, None, cliParams, wait_for_completion=True)"""
     dir_path = os.path.dirname(os.path.realpath(__file__))
-    node = slicer.util.getNode(inputVolume.GetID())
-    slicer.util.saveNode(node, dir_path+"/mem1.nrrd")
+    inputVolumeNode = slicer.util.getNode(inputVolume.GetID())
 
-    node = slicer.util.getNode(outputVolume.GetID())
-    slicer.util.saveNode(node, dir_path+"/tumour.nrrd")
+    # Get image data as numpy array
+    # note that numpy array index order is kji (not ijk)
+    # https://slicer.readthedocs.io/en/latest/developer_guide/script_repository.html#get-value-of-a-volume-at-specific-voxel-coordinates
+    brain_ventricle_membership = slicer.util.arrayFromVolume(inputVolumeNode)
+
+    # Get voxel coordinates from physical coordinates
+    # https://slicer.readthedocs.io/en/latest/developer_guide/script_repository.html#get-volume-voxel-coordinates-from-markup-control-point-ras-coordinates
+    volumeRasToIjk = vtk.vtkMatrix4x4()
+    inputVolumeNode.GetRASToIJKMatrix(volumeRasToIjk)
+    # If volume node is transformed, apply that transform to get volume's RAS coordinates
+    transformRasToVolumeRas = vtk.vtkGeneralTransform()
+    slicer.vtkMRMLTransformNode.GetTransformBetweenNodes(None, inputVolumeNode.GetParentTransformNode(), transformRasToVolumeRas)
 
     cNumber = int(cNumber)
     if mat=="Neo-Hookean" and cNumber==2:
         print("neo")
 
-        #brain_ventricle_membership, header = nrrd.read(dir_path+"/mem1.nrrd")
+        # Define material properties for each tissue (mm, kg, s)
+        YM_parenchima = 3000e-6  # MPa
+        YM_ventricles = 100e-6   # MPa
 
-        brain_ventricle_membership_volume = mvnrrd.open_image(dir_path+"/mem1.nrrd")
+        PR_V = 0.10              # unitless
+        PR_B = 0.49              # unitless
+        density = 1000e-9        # kg/mm^3
 
-        brain_ventricle_membership = brain_ventricle_membership_volume.src_data
-        # Create transform from world coordinates to voxel indeces
-        voxels2world = brain_ventricle_membership_volume.src_transformation
-        world2voxels = np.linalg.inv(voxels2world)
-
-        homogeneous = lambda c3d: np.r_[c3d, 1]  # append 1 to 3D coordinate
-
-        # Define material properties for each tissue
-        YM_parenchima = 3000
-        YM_ventricles = 100
-
-        PR_V = 0.10
-        PR_B = 0.49
-        density = 1000
-
-
-        import pandas as pd
         # Read integration points
         ips = np.genfromtxt(intFile, delimiter=',')
         num_ips = ips.shape[0]
@@ -255,15 +239,17 @@ class BrainMaterialPropertiesLogic(ScriptedLoadableModuleLogic):
         material_props[:,0] = density
 
         for idx, ip in enumerate(ips):
-            x = np.array([-1000*ip[0], -1000*ip[1], 1000*ip[2]])
-            voxel_idxs = world2voxels[:3] @ homogeneous(x)
-            iv, jv, kv = voxel_idxs.astype(np.int)
+            x = np.array([-ip[0], -ip[1], ip[2]])  # LPS to RAS
+            point_VolumeRas = transformRasToVolumeRas.TransformPoint(x)
+            point_Ijk = [0, 0, 0, 1]
+            volumeRasToIjk.MultiplyPoint(np.append(point_VolumeRas, 1.0), point_Ijk)
+            point_Ijk = [ int(round(c)) for c in point_Ijk[0:3] ]
+            iv, jv, kv = point_Ijk
             for i in range(iv-1, iv+1):
                 for j in range(jv-1, jv+1):
                     for k in range(kv-1, kv+1):
-                        material_props[idx, 1] += YM_parenchima *(1-brain_ventricle_membership[i, j, k])+YM_ventricles * brain_ventricle_membership[i, j, k]
-                        material_props[idx, 2] += PR_B * (1-brain_ventricle_membership[i, j, k])+PR_V * brain_ventricle_membership[i, j, k]
-
+                        material_props[idx, 1] += YM_parenchima *(1-brain_ventricle_membership[k, j, i])+YM_ventricles * brain_ventricle_membership[k, j, i]
+                        material_props[idx, 2] += PR_B * (1-brain_ventricle_membership[k, j, i])+PR_V * brain_ventricle_membership[k, j, i]
 
             material_props[idx, 1]/= 8
             material_props[idx, 2]/= 8
@@ -272,6 +258,7 @@ class BrainMaterialPropertiesLogic(ScriptedLoadableModuleLogic):
 
         np.savetxt(matFile, material_props, fmt = "%.8f, %.8f, %.8f", newline='\n')
     elif mat=="Neo-Hookean" and cNumber==3:
+        raise NotImplementedError("Tumor material properties not implemented yet")
         print("neo 3")
         #brain_ventricle_membership, header = nrrd.read(dir_path+"/mem1.nrrd")
         tumour_membership, header = nrrd.read(dir_path+"/tumour.nrrd")
@@ -286,6 +273,7 @@ class BrainMaterialPropertiesLogic(ScriptedLoadableModuleLogic):
         homogeneous = lambda c3d: np.r_[c3d, 1]  # append 1 to 3D coordinate
 
         # Define material properties for each tissue
+        # FIXME: check units for YM and density
         YM_parenchima = 3000
         YM_ventricles = 100
         YM_tumour = 9000
@@ -296,7 +284,6 @@ class BrainMaterialPropertiesLogic(ScriptedLoadableModuleLogic):
         density = 1000
 
 
-        import pandas as pd
         # Read integration points
         ips = np.genfromtxt(intFile, delimiter=',')
         num_ips = ips.shape[0]
@@ -311,9 +298,9 @@ class BrainMaterialPropertiesLogic(ScriptedLoadableModuleLogic):
             for i in range(iv-1, iv+1):
                 for j in range(jv-1, jv+1):
                     for k in range(kv-1, kv+1):
+                        # FIXME: replace [i, j, k] with [k, j, i] (see code above for first case)
                         material_props[idx, 1] += YM_parenchima *(1-brain_ventricle_membership[i, j, k]-tumour_membership[i,j,k]) + YM_tumour * tumour_membership[i,j,k] + YM_ventricles * brain_ventricle_membership[i, j, k]
                         material_props[idx, 2] += PR_B * (1-brain_ventricle_membership[i, j, k]-tumour_membership[i,j,k])+ PR_T * tumour_membership[i,j,k] + PR_V * brain_ventricle_membership[i, j, k]
-
 
             material_props[idx, 1]/= 8
             material_props[idx, 2]/= 8
@@ -322,16 +309,20 @@ class BrainMaterialPropertiesLogic(ScriptedLoadableModuleLogic):
 
         np.savetxt(matFile, material_props, fmt = "%.8f, %.8f, %.8f", newline='\n')
     else:
+        # FIXME: fix problems here similar to what was done for the case above.
+        raise NotImplementedError("Ogden material not implemented yet")
+
         print("ogden")
-        ventricle_membership_volume = mvnrrd.open_image(dir_path+"/mem1.nrrd")
-        ventricle_membership = ventricle_membership_volume.src_data
+        brain_ventricle_membership_volume = mvnrrd.open_image(dir_path+"/mem1.nrrd")
+        ventricle_membership = brain_ventricle_membership_volume.src_data
         tumour_membership, header = nrrd.read(dir_path+"/tumour.nrrd")
 
-        voxels2world = ventricle_membership_volume.src_transformation
+        voxels2world = brain_ventricle_membership_volume.src_transformation
         world2voxels = np.linalg.inv(voxels2world)
 
         homogeneous = lambda c3d: np.r_[c3d, 1]
 
+        # FIXME: check units are correct and compatible with length units
         parenchyma_SM = 842
         tumour_SM = 842*3
         CSF_SM = 4.54
@@ -363,6 +354,7 @@ class BrainMaterialPropertiesLogic(ScriptedLoadableModuleLogic):
             for i in range(iv-1, iv+1):
                 for j in range(jv-1, jv+1):
                     for k in range(kv-1, kv+1):
+                        # FIXME: replace [i, j, k] with [k, j, i] (see code above for first case)
                         #for shear modulus
                         if ventricle_membership[i,j,k] < 0.1:
                             ventricle_membership[i,j,k] = 0
