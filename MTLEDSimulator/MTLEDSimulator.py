@@ -43,89 +43,9 @@ class MTLEDSimulatorWidget(ScriptedLoadableModuleWidget):
     self.layout.addWidget(uiWidget)
     self.ui = slicer.util.childWidgetVariables(uiWidget)
 
-    #self.ui.Model
-    #self.ui.pathLineEdit.setCurrentPath(ctk.ctkPathLineEdit.Dirs)
-
-    #parametersCollapsibleButton = ctk.ctkCollapsibleButton()
-    #parametersCollapsibleButton.text = "Model"
-    #self.layout.addWidget(parametersCollapsibleButton)
-
-    #parametersFormLayout = qt.QFormLayout(parametersCollapsibleButton)
-    #self.inputDirSelector = ctk.ctkPathLineEdit()
-    #self.inputDirSelector.filters = ctk.ctkPathLineEdit.Dirs
-    #self.inputDirSelector.settingKey = 'DICOMPatcherInputDir'
-    #parametersFormLayout.addRow("Input mesh file:", self.inputDirSelector)
-
-
-    #second collapsible
-    #parametersCollapsibleButton2 = ctk.ctkCollapsibleButton()
-    #parametersCollapsibleButton2.text = "Integration Points"
-    #self.layout.addWidget(parametersCollapsibleButton2)
-
-    #parametersFormLayout = qt.QFormLayout(parametersCollapsibleButton2)
-    #self.inputDirSelector2 = ctk.ctkPathLineEdit()
-    #self.inputDirSelector2.filters = ctk.ctkPathLineEdit.Dirs
-    #self.inputDirSelector2.settingKey = 'DICOMPatcherInputDir'
-    #parametersFormLayout.addRow("Input integration points file:", self.inputDirSelector2)
-
-
-
-    #3rd collapsible button
-    #parametersCollapsibleButton3 = ctk.ctkCollapsibleButton()
-    #parametersCollapsibleButton3.text = "Materials"
-    #self.layout.addWidget(parametersCollapsibleButton3)
-
-    #parametersFormLayout = qt.QFormLayout(parametersCollapsibleButton3)
-    #self.inputDirSelector4 = ctk.ctkPathLineEdit()
-    #self.inputDirSelector4.filters = ctk.ctkPathLineEdit.Dirs
-    #self.inputDirSelector4.settingKey = 'DICOMPatcherInputDir'
-    #parametersFormLayout.addRow("Input material properties file:", self.inputDirSelector4)
-
-    #4th button
-    #parametersCollapsibleButton4 = ctk.ctkCollapsibleButton()
-    #parametersCollapsibleButton4.text = "Shape function"
-    #self.layout.addWidget(parametersCollapsibleButton4)
-
-    #parametersFormLayout = qt.QFormLayout(parametersCollapsibleButton4)
-
-    #loadReferencesComboBox = ctk.ctkComboBox()
-    #loadReferencesComboBox.toolTip = "Determines whether referenced DICOM series are " \
-      #"offered when loading DICOM, or the automatic behavior if interaction is disabled. " \
-     # "Interactive selection of referenced series is the default selection"
-    #loadReferencesComboBox.addItem("Ask user", qt.QMessageBox.InvalidRole)
-    #loadReferencesComboBox.addItem("Always", qt.QMessageBox.Yes)
-    #loadReferencesComboBox.addItem("Never", qt.QMessageBox.No)
-    #loadReferencesComboBox.currentIndex = 0
-    #parametersFormLayout.addRow("Load referenced series:", loadReferencesComboBox)
-
-    #5th button
-    #parametersCollapsibleButton5 = ctk.ctkCollapsibleButton()
-    #parametersCollapsibleButton5.text = "Loading"
-    #self.layout.addWidget(parametersCollapsibleButton5)
-
-    #6th
-    #parametersCollapsibleButton6 = ctk.ctkCollapsibleButton()
-    #parametersCollapsibleButton6.text = "Contacts"
-    #self.layout.addWidget(parametersCollapsibleButton6)
-
-    #7th
-    #parametersCollapsibleButton7 = ctk.ctkCollapsibleButton()
-    #parametersCollapsibleButton7.text = "Dynamic relaxation"
-    #self.layout.addWidget(parametersCollapsibleButton7)
-
-    #8th
-    #parametersCollapsibleButton8 = ctk.ctkCollapsibleButton()
-    #parametersCollapsibleButton8.text = "Output"
-    #self.layout.addWidget(parametersCollapsibleButton8)
-
-
-    self.ui.inputSelector.setMRMLScene(slicer.mrmlScene)
-    self.ui.outputSelector.setMRMLScene(slicer.mrmlScene)
     self.ui.applyButton.enabled =True
     # connections
     self.ui.applyButton.connect('clicked(bool)', self.onApplyButton)
-    #self.ui.inputSelector.connect("currentNodeChanged(vtkMRMLNode*)", self.onSelect)
-    #self.ui.outputSelector.connect("currentNodeChanged(vtkMRMLNode*)", self.onSelect)
 
     # Add vertical spacer
     self.layout.addStretch(1)
@@ -136,13 +56,8 @@ class MTLEDSimulatorWidget(ScriptedLoadableModuleWidget):
   def cleanup(self):
     pass
 
-  #def onSelect(self):
-    #self.ui.applyButton.enabled = self.ui.inputSelector.currentNode() and self.ui.outputSelector.currentNode()
-
   def onApplyButton(self):
     logic = MTLEDSimulatorLogic()
-    enableScreenshotsFlag = self.ui.enableScreenshotsFlagCheckBox.checked
-    imageThreshold = self.ui.imageThresholdSliderWidget.value
 
     #Model
     meshFile = self.ui.meshFile.currentPath
@@ -179,7 +94,7 @@ class MTLEDSimulatorWidget(ScriptedLoadableModuleWidget):
     #outputfiles
     dButton = self.ui.sPath.currentPath
 
-    logic.run(self.ui.inputSelector.currentNode(), self.ui.outputSelector.currentNode(), imageThreshold, meshFile, mass_scaling,adap, adaptive_eps, adap_level, tDivision, iTetra,intFile, mFile, tFunction,bFunction, uDerivative, dilationCoefficient, lFile, loadCurve, contact, skull,loadIntegration, loadRunning, eTime, dButton, enableScreenshotsFlag)
+    logic.run(meshFile, mass_scaling, adap, adaptive_eps, adap_level, tDivision, iTetra,intFile, mFile, tFunction,bFunction, uDerivative, dilationCoefficient, lFile, loadCurve, contact, skull,loadIntegration, loadRunning, eTime, dButton)
 
 #
 # MTLEDSimulatorLogic
@@ -208,34 +123,17 @@ class MTLEDSimulatorLogic(ScriptedLoadableModuleLogic):
       return False
     return True
 
-  def isValidInputOutputData(self, inputVolumeNode, outputVolumeNode):
+  def isValidInputOutputData(self):
     """Validates if the output is not the same as input
     """
-    if not inputVolumeNode:
-      logging.debug('isValidInputOutputData failed: no input volume node defined')
-      return False
-    if not outputVolumeNode:
-      logging.debug('isValidInputOutputData failed: no output volume node defined')
-      return False
-    if inputVolumeNode.GetID()==outputVolumeNode.GetID():
-      logging.debug('isValidInputOutputData failed: input and output volume is the same. Create a new volume for output to avoid this error.')
-      return False
     return True
 
-  def run(self, inputVolume, outputVolume, imageThreshold, meshFile, mass_scaling,adap, adaptive_eps, adap_level, tDivision, intPerTetra, intFile, mFile, tFunction, bFunction, uDerivative, dilationCoefficient, lFile, loadCurve, contact, skull, loadIntegration, loadRunning, eTime,dButton, enableScreenshots=0):
+  def run(self, meshFile, mass_scaling, adap, adaptive_eps, adap_level, tDivision, intPerTetra, intFile, mFile, tFunction, bFunction, uDerivative, dilationCoefficient, lFile, loadCurve, contact, skull, loadIntegration, loadRunning, eTime,dButton):
     """
     Run the actual algorithm
     """
 
-    if not self.isValidInputOutputData(inputVolume, outputVolume):
-      slicer.util.errorDisplay('Input volume is the same as output volume. Choose a different output volume.')
-      return False
-
     logging.info('Processing started')
-
-    # Compute the thresholded output volume using the Threshold Scalar Volume CLI module
-    #cliParams = {'InputVolume': inputVolume.GetID(), 'OutputVolume': outputVolume.GetID(), 'ThresholdValue' : imageThreshold, 'ThresholdType' : 'Above'}
-    #cliNode = slicer.cli.run(slicer.modules.thresholdscalarvolume, None, cliParams, wait_for_completion=True)
 
     print(meshFile, mass_scaling)
     print(adap)
@@ -334,12 +232,6 @@ class MTLEDSimulatorLogic(ScriptedLoadableModuleLogic):
     #meshio.write(r"home/saima/benzwick-explicitsim-f7f515ec1301/build/Saima/brain_withmaterial_results/brain2.vtk", mesh)
 
     #model = slicer.util.loadModel(dir_path+"/results/brain)
-
-
-
-    # Capture screenshot
-    if enableScreenshots:
-      self.takeScreenshot('MTLEDSimulatorTest-Start','MyScreenshot',-1)
 
     logging.info('Processing completed')
 
