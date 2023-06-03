@@ -78,7 +78,7 @@ class BrainMeshSurfaceCellsSelectionWidget(ScriptedLoadableModuleWidget, VTKObse
 
     #button for extracting surface model from volume model
     self.ui.saveSurfaceModelButton.connect('clicked(bool)' , self.onApplyExtractSurfaceModelButton)
-    
+
     self.ui.applyButton.connect('clicked(bool)', self.onApplyButton)
 
     # Initial GUI update
@@ -152,17 +152,17 @@ class BrainMeshSurfaceCellsSelectionWidget(ScriptedLoadableModuleWidget, VTKObse
     else:
       self.ui.saveSurfaceModelButton.toolTip = "Select input brain model"
       self.ui.saveSurfaceModelButton.enabled = False
-    
-    
+
+
     if self._parameterNode.GetNodeReference("InputVolume") and self._parameterNode.GetNodeReference("OutputVolume"):
       self.ui.applyButton.toolTip = "Compute output volume"
       self.ui.applyButton.enabled = True
     else:
       self.ui.applyButton.toolTip = "Select input and output volume nodes"
       self.ui.applyButton.enabled = False
-      
-      
-      
+
+
+
 
   def updateParameterNodeFromGUI(self, caller=None, event=None):
     """
@@ -188,10 +188,10 @@ class BrainMeshSurfaceCellsSelectionWidget(ScriptedLoadableModuleWidget, VTKObse
     except Exception as e:
       slicer.util.errorDisplay("Failed to compute results: "+str(e))
       import traceback
-      traceback.print_exc()  
-      
-      
-      
+      traceback.print_exc()
+
+
+
   def onApplyButton(self):
     """
     Run processing when user clicks "Apply" button.
@@ -224,7 +224,7 @@ class BrainMeshSurfaceCellsSelectionLogic(ScriptedLoadableModuleLogic):
       parameterNode.SetParameter("Threshold", "50.0")
     if not parameterNode.GetParameter("Invert"):
       parameterNode.SetParameter("Invert", "false")
-      
+
   def onPointsModified(self,selectionArray,markupsNode, cell,observer=None, eventid=None):
     #global markupsNode, selectionArray
     selectionArray.Fill(0) # set all cells to non-selected by default
@@ -242,7 +242,7 @@ class BrainMeshSurfaceCellsSelectionLogic(ScriptedLoadableModuleLogic):
         cell.FindClosestPoint(markupPoint, closestPoint, cellObj, cellId, subId, dist2)
         closestCell = cellId.get()
         arr=np.append(arr,closestCell)
-        
+
         print("markup point",markupPoint)
         print("closest Cell",closestCell)
         if closestCell >=0:
@@ -264,13 +264,13 @@ class BrainMeshSurfaceCellsSelectionLogic(ScriptedLoadableModuleLogic):
     """Run the method to extract and save the surface model from a volume brain model"""
     if not inputModel:
       raise ValueError("Input Model is invalid")
-    
+
     logging.info('Processing started')
     modelNode = slicer.util.getNode(inputModel.GetID()) # extract surface in this model
     #mesh = modelNode.GetMesh()
     dir_path = os.path.dirname(os.path.realpath(__file__))
-    file_path ="/home/saima/volumeMesh.vtk" 
-    slicer.util.saveNode(modelNode, dir_path+"/volumeMesh.vtk")    
+    file_path ="/home/saima/volumeMesh.vtk"
+    slicer.util.saveNode(modelNode, dir_path+"/volumeMesh.vtk")
     #reading vtk file and converting it inp and then reading inp file and and saving the inp file only with s3 elements
     #again readin inp file and converting to stl and reading stl file using the slicer util.load node
     import meshio
@@ -286,7 +286,7 @@ class BrainMeshSurfaceCellsSelectionLogic(ScriptedLoadableModuleLogic):
             copy = True
             break;
         print(l)
-        o.write(l)  
+        o.write(l)
     #saving inp surface mesh file reading it again through meshio and converting it into stl
     o.close()
     f.close()
@@ -295,8 +295,8 @@ class BrainMeshSurfaceCellsSelectionLogic(ScriptedLoadableModuleLogic):
     #import meshio
     #mesh = meshio.read("/home/saima/slicer/Case Results New/braincran_deformed.vtk")
     meshio.write(sFile, surface_mesh)
-      
-      
+
+
   def run(self, inputVolume, outputVolume, meshFile, fidFile, pointFile,invert=False):
     """
     Run the processing algorithm.
@@ -316,10 +316,10 @@ class BrainMeshSurfaceCellsSelectionLogic(ScriptedLoadableModuleLogic):
       'ThresholdType' : 'Below' if invert else 'Above'
       }
     cliNode = slicer.cli.run(slicer.modules.thresholdscalarvolume, None, cliParams, wait_for_completion=True)"""
-    
+
     modelNode = slicer.util.getNode(inputVolume.GetID()) # select cells in this model
     markupsNode = slicer.util.getNode(outputVolume.GetID()) # points will be selected at positions specified by this markups fiducial node
-    
+
     cellScalars = modelNode.GetMesh().GetCellData()
     selectionArray = cellScalars.GetArray('selection')
     if not selectionArray:
@@ -328,26 +328,26 @@ class BrainMeshSurfaceCellsSelectionLogic(ScriptedLoadableModuleLogic):
       selectionArray.SetNumberOfValues(modelNode.GetMesh().GetNumberOfCells())
       selectionArray.Fill(0)
       cellScalars.AddArray(selectionArray)
-      
-    
+
+
     modelNode.GetDisplayNode().SetActiveScalar("selection", vtk.vtkAssignAttribute.CELL_DATA)
     modelNode.GetDisplayNode().SetAndObserveColorNodeID("vtkMRMLColorTableNodeWarm1")
     modelNode.GetDisplayNode().SetScalarVisibility(True)
-    
+
     cell = vtk.vtkCellLocator()
     cell.SetDataSet(modelNode.GetMesh())
-    cell.BuildLocator()  
-    
+    cell.BuildLocator()
+
     arr = self.onPointsModified(selectionArray, markupsNode, cell)
     print(arr)
     import numpy as np
     arr_new = np.array(arr)
     arr_new1 = np.unique(arr_new)
     arr_new1.sort()
-    
+
     print(arr_new1)
     print(len(arr_new1))
-    
+
     fff=open(meshFile,"w+")
     i=0
     for x in range(len(arr_new1)):
@@ -355,7 +355,7 @@ class BrainMeshSurfaceCellsSelectionLogic(ScriptedLoadableModuleLogic):
         fff.write(',')
         print(arr_new1[i])
         i=i+1
-    
+
     fff.close()
     f = open(fidFile,"w+")
     import numpy
@@ -363,13 +363,13 @@ class BrainMeshSurfaceCellsSelectionLogic(ScriptedLoadableModuleLogic):
     j = 1;
     f.write("# Markups fiducial file version = 4.4\n")
     f.write("# CoordinateSystem = 0\n")
-    f.write("# columns = id,x,y,z,ow,ox,oy,oz,vis,sel,lock,label,desc,associatedNodeID)\n")        
-    
+    f.write("# columns = id,x,y,z,ow,ox,oy,oz,vis,sel,lock,label,desc,associatedNodeID)\n")
+
     ff = open(pointFile,"w+")
 
 
     for i in range(len(arr_new1)):
-        
+
         cell = mesh.GetCell(int(arr_new1[i]))
         #cell2 = mesh.GetCell(int(arr[i]+1))
         #print(cell2)
@@ -395,20 +395,20 @@ class BrainMeshSurfaceCellsSelectionLogic(ScriptedLoadableModuleLogic):
         pointThree = points.GetPoint(2)
         a3 = numpy.array(pointThree)
         print(a3)
-        
+
         print("get point/node ids:"+str(p1)+" "+str(p2)+" "+str(p3)+"\n")
         print("cell Id"+str(cell))
         print(int(arr_new1[i]))
-        
+
         ax_avg = (a1[0]+a2[0]+a3[0])/3
         ay_avg = (a1[1]+a2[1]+a3[1])/3
         az_avg = (a1[2]+a2[2]+a3[2])/3
-        
+
         #print(points, pointOne, pointTwo, pointThree)
         #f.write("vtkMRMLMarkupsFiducialNode_%d,%.8f,%.8f,%.8f,0,0,0,1,1,1,0,F-%d,vtkMRMLScalarVolumeNode2\n" %(p1,a1[0], a1[1], a1[2], j))
         #f.write("vtkMRMLMarkupsFiducialNode_%d,%.8f,%.8f,%.8f,0,0,0,1,1,1,0,F-%d,vtkMRMLScalarVolumeNode2\n" %(p2,a2[0], a2[1], a2[2], j+1))
         #f.write("vtkMRMLMarkupsFiducialNode_%d,%.8f,%.8f,%.8f,0,0,0,1,1,1,0,F-%d,vtkMRMLScalarVolumeNode2\n" %(p3,a3[0], a3[1], a3[2], j+2))
-        
+
         f.write("vtkMRMLMarkupsFiducialNode_%d,%.8f,%.8f,%.8f,0,0,0,1,1,1,0,F-%d,vtkMRMLScalarVolumeNode2\n" %(j,ax_avg, ay_avg, az_avg, j))
         j = j+3
 

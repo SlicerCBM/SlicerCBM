@@ -66,7 +66,7 @@ class Fusion2Widget(ScriptedLoadableModuleWidget, VTKObservationMixin):
 
     # Connections
     self.ui.parameterNodeSelector.connect('currentNodeChanged(vtkMRMLNode*)', self.setParameterNode)
-    
+
     #self.ui.scalpSelector.connect("currentSegmentChanged(QString)", self.onContourChange)
     #self.ui.skullSelector.connect("currentSegmentChanged(QString)", self.onContourChange)
 
@@ -78,9 +78,9 @@ class Fusion2Widget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     self.ui.gmSelector.connect("currentNodeChanged(vtkMRMLNode*)", self.updateParameterNodeFromGUI)
     self.ui.csfSelector.connect("currentNodeChanged(vtkMRMLNode*)", self.updateParameterNodeFromGUI)
     #self.ui.segBrainNode.connect("currentNodeChanged(vtkMRMLNode*)", self.updateParameterNodeFromGUI)
-   
-    
-    
+
+
+
     self.ui.applyButton.connect('clicked(bool)', self.onApplyButton)
 
     # Initial GUI update
@@ -111,8 +111,8 @@ class Fusion2Widget(ScriptedLoadableModuleWidget, VTKObservationMixin):
       self.addObserver(inputParameterNode, vtk.vtkCommand.ModifiedEvent, self.updateGUIFromParameterNode)
     self._parameterNode = inputParameterNode
     self.updateGUIFromParameterNode()
-    
- 
+
+
   def updateGUIFromParameterNode(self, caller=None, event=None):
     """
     This method is called whenever parameter node is changed.
@@ -123,20 +123,20 @@ class Fusion2Widget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     self.ui.basicCollapsibleButton.enabled = self._parameterNode is not None
     if self._parameterNode is None:
       return
-      
+
     # Update each widget from parameter node
     wasBlocked = self.ui.electrodeSelector.blockSignals(True)
     self.ui.electrodeSelector.setCurrentNode(self._parameterNode.GetNodeReference("electrodeSelector"))
     self.ui.electrodeSelector.blockSignals(wasBlocked)
-    
+
     wasBlocked = self.ui.scalpSelector.blockSignals(True)
     self.ui.scalpSelector.setCurrentNode(self._parameterNode.GetNodeReference("scalpSelector"))
     self.ui.scalpSelector.blockSignals(wasBlocked)
-    
+
     wasBlocked = self.ui.skullSelector.blockSignals(True)
     self.ui.skullSelector.setCurrentNode(self._parameterNode.GetNodeReference("skullSelector"))
     self.ui.skullSelector.blockSignals(wasBlocked)
-    
+
     wasBlocked = self.ui.brainSelector.blockSignals(True)
     self.ui.brainSelector.setCurrentNode(self._parameterNode.GetNodeReference("brainSelector"))
     self.ui.brainSelector.blockSignals(wasBlocked)
@@ -148,12 +148,12 @@ class Fusion2Widget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     wasBlocked = self.ui.gmSelector.blockSignals(True)
     self.ui.gmSelector.setCurrentNode(self._parameterNode.GetNodeReference("gmSelector"))
     self.ui.gmSelector.blockSignals(wasBlocked)
-    
+
     wasBlocked = self.ui.csfSelector.blockSignals(True)
     self.ui.csfSelector.setCurrentNode(self._parameterNode.GetNodeReference("csfSelector"))
     self.ui.csfSelector.blockSignals(wasBlocked)
-    
-    
+
+
     # Update buttons states and tooltips
     if self._parameterNode.GetNodeReference("scalpSelector"): #and self._parameterNode.GetNodeReference("skullVolume"):
       self.ui.applyButton.toolTip = "Compute output volume"
@@ -169,7 +169,7 @@ class Fusion2Widget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     """
 
     if self._parameterNode is None:
-      return 
+      return
     self._parameterNode.SetNodeReferenceID("scalpSelector", self.ui.scalpSelector.currentNodeID())
     self._parameterNode.SetNodeReferenceID("skullSelector", self.ui.skullSelector.currentNodeID())
     self._parameterNode.SetNodeReferenceID("brainSelector", self.ui.brainSelector.currentNodeID())
@@ -225,19 +225,19 @@ class Fusion2Logic(ScriptedLoadableModuleLogic):
     #dir_path = os.path.dirname(os.path.realpath(__file__))
     #slicer.util.saveNode(skullNode, dir_path+"/skullNode.nrrd")
     #skull_mask, skull_header= nrrd.read(dir_path+"/skullNode")
-    
-    
+
+
     #scalp_mask = slicer.util.arrayFromVolume(scalpNode)
     #skull_mask = slicer.util.arrayFromVolume(skullNode)
     #csf_mask = slicer.util.arrayFromVolume(brainNode)
     #sheet_mask = slicer.util.arrayFromVolume(electrodeSheetNode)
     #brain_data = slicer.util.arrayFromVolume(segBrainNode)
-    
+
     print(imgType)
     #segmentationNode = slicer.vtkMRMLSegmentationNode()
     #slicer.mrmlScene.AddNode(segmentationNode)
     #segmentationNode.CreateDefaultDisplayNodes()
-    #import volume to labelmap     
+    #import volume to labelmap
     #slicer.modules.segmentations.logic().ImportLabelmapToSegmentationNode(scalpNode, segmentationNode)
     #slicer.modules.segmentations.logic().ImportLabelmapToSegmentationNode(skullNode, segmentationNode)
     print(seg1Node.GetID())
@@ -250,7 +250,7 @@ class Fusion2Logic(ScriptedLoadableModuleLogic):
     print(skullSelector)
     print(brainSelector)
     if(imgType==0):
-        #create a anew segmentation and delete the csf, wm, gm from the brain combine the remaining brain with csf 
+        #create a anew segmentation and delete the csf, wm, gm from the brain combine the remaining brain with csf
         segmentationNode1 = slicer.vtkMRMLSegmentationNode()
         slicer.mrmlScene.AddNode(segmentationNode1)
         segmentationNode1.CreateDefaultDisplayNodes() # only needed for display
@@ -258,43 +258,43 @@ class Fusion2Logic(ScriptedLoadableModuleLogic):
         wmSegment = seg4Node.GetSegmentation().GetSegment(wmSelector)
         gmSegment = seg5Node.GetSegmentation().GetSegment(gmSelector)
         csfSegment = seg6Node.GetSegmentation().GetSegment(csfSelector)
-        
+
         segmentationNode1.GetSegmentation().CopySegmentFromSegmentation(seg1Node.GetSegmentation(), brainSelector)
         segmentationNode1.GetSegmentation().CopySegmentFromSegmentation(seg5Node.GetSegmentation(), gmSelector)
         segmentationNode1.GetSegmentation().CopySegmentFromSegmentation(seg6Node.GetSegmentation(), csfSelector)
         segmentationNode1.GetSegmentation().CopySegmentFromSegmentation(seg4Node.GetSegmentation(), wmSelector)
-    
-        
+
+
         segmentEditorWidget = slicer.qMRMLSegmentEditorWidget()
         # To show segment editor widget (useful for debugging): segmentEditorWidget.show()
         segmentEditorWidget.setMRMLScene(slicer.mrmlScene)
         segmentEditorNode = slicer.vtkMRMLSegmentEditorNode()
         #segmentEditorWidget.setMasterVolumeNode(wholeBrain)
         #segmentEditorNode.SetOverwriteMode(slicer.vtkMRMLSegmentEditorNode.OverwriteNone)
-        segmentEditorNode.SetOverwriteMode(2) 
+        segmentEditorNode.SetOverwriteMode(2)
         #segmentEditorNode.SetOverwriteMode(1)
-        
+
         slicer.mrmlScene.AddNode(segmentEditorNode)
         segmentEditorWidget.setMRMLSegmentEditorNode(segmentEditorNode)
         segmentEditorWidget.setSegmentationNode(segmentationNode1)
-        
+
         #print(wmID)
         #print(brainID)
         #print(segmentationNode.GetID())
-        
+
         segmentEditorWidget.setActiveEffectByName("Logical operators")
         effect = segmentEditorWidget.activeEffect()
         effect.setParameter("Operation", "SUBTRACT")
-        effect.setParameter("ModifierSegmentID",wmSelector) 
+        effect.setParameter("ModifierSegmentID",wmSelector)
         segmentEditorWidget.setCurrentSegmentID(brainSelector)
         effect.self().onApply()
         effect.setParameter("ModifierSegmentID",gmSelector)
         effect.self().onApply()
         effect.setParameter("ModifierSegmentID",csfSelector)
         effect.self().onApply()
-        
-       
-        
+
+
+
         #combine the remaining brain and csf segments to fill all the holes in the segmentation file
         segmentEditorWidget.setActiveEffectByName("Logical operators")
         #segmentEditorNode.SetOverwriteMode(slicer.vtkMRMLSegmentEditorNode.OverwriteNone)
@@ -303,16 +303,16 @@ class Fusion2Logic(ScriptedLoadableModuleLogic):
         segmentEditorWidget.setCurrentSegmentID(brainSelector)
         effect.setParameter("ModifierSegmentID", csfSelector)
         effect.self().onApply()
-        
-        
-        
+
+
+
         segmentationNode = slicer.vtkMRMLSegmentationNode()
         slicer.mrmlScene.AddNode(segmentationNode)
         segmentationNode.CreateDefaultDisplayNodes() # only needed for display
         #brainID= segmentationNode.GetSegmentation.GetBinaryLabelMapRepresentation(brainSegment)
-        
+
         empSegID0 = segmentationNode.GetSegmentation().AddEmptySegment("air")
-        #segmentationNode.GetSegmentation().GetSegment(empSegID0).SetColor(0,0,0) 
+        #segmentationNode.GetSegmentation().GetSegment(empSegID0).SetColor(0,0,0)
         segmentationNode.GetSegmentation().CopySegmentFromSegmentation(seg1Node.GetSegmentation(), scalpSelector)
         scalpSeg =  segmentationNode.GetSegmentation().GetSegment(scalpSelector)
         scalpSeg.SetColor(255/255,192/255,203/255)
@@ -327,15 +327,15 @@ class Fusion2Logic(ScriptedLoadableModuleLogic):
         segmentationNode.GetSegmentation().GetSegment(brainSelector).SetColor(0,0,255/255)
         segmentationNode.GetSegmentation().GetSegment(brainSelector).SetName("csf")
         empSegID2 = segmentationNode.GetSegmentation().AddEmptySegment("unused")
-     
+
         segmentationNode.GetSegmentation().CopySegmentFromSegmentation(seg4Node.GetSegmentation(), wmSelector)
         segmentationNode.GetSegmentation().GetSegment(wmSelector).SetColor(255/255,255/255,255/255)
-        
-        
+
+
         #remove the brainselector segment
         #segmentationNode.GetSegmentation().RemoveSegment(wmSelector)
-        
-        
+
+
         empSegID3 = segmentationNode.GetSegmentation().AddEmptySegment("Maximally Conductive")
         empSegID4 = segmentationNode.GetSegmentation().AddEmptySegment("Manimally Conductive")
         #empSegID5 = segmentationNode.GetSegmentation().AddEmptySegment("electrodeSheetArray")
@@ -343,7 +343,7 @@ class Fusion2Logic(ScriptedLoadableModuleLogic):
         segmentationNode.GetSegmentation().CopySegmentFromSegmentation(seg7Node.GetSegmentation(), electrodeSelector)
         segmentationNode.GetSegmentation().GetSegment(electrodeSelector).SetColor(0,0,0)
         segmentationNode.GetSegmentation().GetSegment(electrodeSelector).SetName("electrode Sheet")
-    
+
     elif(imgType==1):
         segmentationNode1 = slicer.vtkMRMLSegmentationNode()
         slicer.mrmlScene.AddNode(segmentationNode1)
@@ -352,27 +352,27 @@ class Fusion2Logic(ScriptedLoadableModuleLogic):
         wmSegment = seg4Node.GetSegmentation().GetSegment(wmSelector)
         gmSegment = seg5Node.GetSegmentation().GetSegment(gmSelector)
         csfSegment = seg6Node.GetSegmentation().GetSegment(csfSelector)
-        
+
         segmentationNode1.GetSegmentation().CopySegmentFromSegmentation(seg1Node.GetSegmentation(), brainSelector)
         segmentationNode1.GetSegmentation().CopySegmentFromSegmentation(seg7Node.GetSegmentation(), electrodeSelector)
         segmentationNode1.GetSegmentation().CopySegmentFromSegmentation(seg5Node.GetSegmentation(), gmSelector)
         segmentationNode1.GetSegmentation().CopySegmentFromSegmentation(seg6Node.GetSegmentation(), csfSelector)
         segmentationNode1.GetSegmentation().CopySegmentFromSegmentation(seg4Node.GetSegmentation(), wmSelector)
-    
-        
+
+
         segmentEditorWidget = slicer.qMRMLSegmentEditorWidget()
         # To show segment editor widget (useful for debugging): segmentEditorWidget.show()
         segmentEditorWidget.setMRMLScene(slicer.mrmlScene)
         segmentEditorNode = slicer.vtkMRMLSegmentEditorNode()
-        segmentEditorNode.SetOverwriteMode(2)               
+        segmentEditorNode.SetOverwriteMode(2)
         slicer.mrmlScene.AddNode(segmentEditorNode)
         segmentEditorWidget.setMRMLSegmentEditorNode(segmentEditorNode)
         segmentEditorWidget.setSegmentationNode(segmentationNode1)
-              
+
         segmentEditorWidget.setActiveEffectByName("Logical operators")
         effect = segmentEditorWidget.activeEffect()
         effect.setParameter("Operation", "SUBTRACT")
-        effect.setParameter("ModifierSegmentID",wmSelector) 
+        effect.setParameter("ModifierSegmentID",wmSelector)
         segmentEditorWidget.setCurrentSegmentID(brainSelector)
         effect.self().onApply()
         effect.setParameter("ModifierSegmentID",gmSelector)
@@ -383,7 +383,7 @@ class Fusion2Logic(ScriptedLoadableModuleLogic):
         effect.self().onApply()
 
 
-  
+
         #combine the remaining brain and csf segments to fill all the holes in the segmentation file
         segmentEditorWidget.setActiveEffectByName("Logical operators")
         #segmentEditorNode.SetOverwriteMode(slicer.vtkMRMLSegmentEditorNode.OverwriteNone)
@@ -392,13 +392,13 @@ class Fusion2Logic(ScriptedLoadableModuleLogic):
         segmentEditorWidget.setCurrentSegmentID(brainSelector)
         effect.setParameter("ModifierSegmentID", csfSelector)
         effect.self().onApply()
-        
-        
-        
+
+
+
         segmentationNode = slicer.vtkMRMLSegmentationNode()
         slicer.mrmlScene.AddNode(segmentationNode)
         segmentationNode.CreateDefaultDisplayNodes() # only needed for display
-        
+
         empSegID0 = segmentationNode.GetSegmentation().AddEmptySegment("air")
         segmentationNode.GetSegmentation().CopySegmentFromSegmentation(seg1Node.GetSegmentation(), scalpSelector)
         scalpSeg =  segmentationNode.GetSegmentation().GetSegment(scalpSelector)
@@ -413,50 +413,50 @@ class Fusion2Logic(ScriptedLoadableModuleLogic):
         segmentationNode.GetSegmentation().GetSegment(brainSelector).SetColor(0,0,255/255)
         segmentationNode.GetSegmentation().GetSegment(brainSelector).SetName("csf")
         empSegID2 = segmentationNode.GetSegmentation().AddEmptySegment("unused")
-     
+
         segmentationNode.GetSegmentation().CopySegmentFromSegmentation(seg4Node.GetSegmentation(), wmSelector)
         segmentationNode.GetSegmentation().GetSegment(wmSelector).SetColor(255/255,255/255,255/255)
-        
-        
+
+
         empSegID3 = segmentationNode.GetSegmentation().AddEmptySegment("Maximally Conductive")
         empSegID4 = segmentationNode.GetSegmentation().AddEmptySegment("Manimally Conductive")
-  
+
         segmentationNode.GetSegmentation().CopySegmentFromSegmentation(seg7Node.GetSegmentation(), electrodeSelector)
         segmentationNode.GetSegmentation().GetSegment(electrodeSelector).SetColor(0,0,0)
         segmentationNode.GetSegmentation().GetSegment(electrodeSelector).SetName("electrode Sheet")
-        
-    
+
+
     #segmentationNode.GetSegmentation().CopySegmentFromSegmentation(seg3Node.GetSegmentation(), brainSelector)
-    
-    
+
+
     #brainID = segmentationNode.GetSegmentation().AddSegment(brainSegment)
-    
+
     #wholeBrain = slicer.mrmlScene.AddNewNodeByClass("vtkMRMLLabelMapVolumeNode")
     #slicer.modules.segmentations.logic().ExportVisibleSegmentsToLabelmapNode(segmentationNode, wholeBrain)
-   
+
     #segmentationNode.SetReferenceImageGeometryParameterFromVolumeNode(wholeBrain)
     #segmentationNode.GetSegmentation().AddSegment(wmSegment)
     #segmentationNode.GetSegmentation().AddSegment(gmSegment)
     #segmentationNode.GetSegmentation().AddSegment(csfSegment)
     #wmID = segmentationNode.GetSegmentation().GetSegmentIdBySegmentName(wmSelector)
     #brainID = segmentationNode.GetSegmentation().GetSegmentIdBySegmentName(brainSelector)
-    
-    
-   
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
+
     #segmentEditorNode = self.scriptedEffect.parameterSetNode()
     #segmentationNode = segmentEditorNode.GetSegmentationNode()
     #currentSegmentId = segmentEditorNode.GetSelectedSegmentID()
     #print(segmentEditorNode)
-    #slicer.modules.segmentations.logic().ImportLabelmapToSegmentationNode(brainNode, segmentationNode) 
+    #slicer.modules.segmentations.logic().ImportLabelmapToSegmentationNode(brainNode, segmentationNode)
     #
     # FIXME: check: I replaced this now but haven't checked yet (should be int not double)
-    
-   
+
+
     logging.info('Processing completed')
 
 #

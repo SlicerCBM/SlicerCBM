@@ -110,7 +110,7 @@ class FiducialToModelDistanceWidget(ScriptedLoadableModuleWidget, VTKObservation
 
     # Disable all sections if no parameter node is selected
     self.ui.basicCollapsibleButton.enabled = self._parameterNode is not None
-    
+
     if self._parameterNode is None:
       return
 
@@ -124,7 +124,7 @@ class FiducialToModelDistanceWidget(ScriptedLoadableModuleWidget, VTKObservation
     self.ui.outputSelector.setCurrentNode(self._parameterNode.GetNodeReference("OutputVolume"))
     self.ui.outputSelector.blockSignals(wasBlocked)
 
-    
+
 
     # Update buttons states and tooltips
     if self._parameterNode.GetNodeReference("InputVolume") and self._parameterNode.GetNodeReference("OutputVolume"):
@@ -146,7 +146,7 @@ class FiducialToModelDistanceWidget(ScriptedLoadableModuleWidget, VTKObservation
 
     self._parameterNode.SetNodeReferenceID("InputVolume", self.ui.inputSelector.currentNodeID)
     self._parameterNode.SetNodeReferenceID("OutputVolume", self.ui.outputSelector.currentNodeID)
-    
+
 
   def onApplyButton(self):
     """
@@ -194,7 +194,7 @@ class FiducialToModelDistanceLogic(ScriptedLoadableModuleLogic):
     # Compute the thresholded output volume using the Threshold Scalar Volume CLI module
     markupsNode = slicer.util.getNode(inputVolume.GetID())
     modelNode = slicer.util.getNode(outputVolume.GetID())
-    
+
     # Transform model polydata to world coordinate system
     if modelNode.GetParentTransformNode():
       transformModelToWorld = vtk.vtkGeneralTransform()
@@ -206,7 +206,7 @@ class FiducialToModelDistanceLogic(ScriptedLoadableModuleLogic):
       surface_World = polyTransformToWorld.GetOutput()
     else:
       surface_World = modelNode.GetPolyData()
-    
+
     # Create arrays to store results
     indexCol = vtk.vtkIntArray()
     indexCol.SetName("Index")
@@ -214,10 +214,10 @@ class FiducialToModelDistanceLogic(ScriptedLoadableModuleLogic):
     labelCol.SetName("Name")
     distanceCol = vtk.vtkDoubleArray()
     distanceCol.SetName("Distance")
-    
+
     markupsNode2 = slicer.mrmlScene.AddNewNodeByClass("vtkMRMLMarkupsFiducialNode")
     markupsNode2.CreateDefaultDisplayNodes()
-    
+
     distanceFilter = vtk.vtkImplicitPolyDataDistance()
     distanceFilter.SetInput(surface_World);
     nOfFiduciallPoints = markupsNode.GetNumberOfFiducials()
@@ -230,20 +230,20 @@ class FiducialToModelDistanceLogic(ScriptedLoadableModuleLogic):
       indexCol.InsertNextValue(i)
       labelCol.InsertNextValue(markupsNode.GetNthControlPointLabel(i))
       distanceCol.InsertNextValue(closestPointDistance)
-    
+
     # Create a table from result arrays
     resultTableNode = slicer.mrmlScene.AddNewNodeByClass("vtkMRMLTableNode", "Points from surface distance")
     resultTableNode.AddColumn(indexCol)
     resultTableNode.AddColumn(labelCol)
     resultTableNode.AddColumn(distanceCol)
-    
+
     # Show table in view layout
     slicer.app.layoutManager().setLayout(slicer.vtkMRMLLayoutNode.SlicerLayoutFourUpTableView)
     slicer.app.applicationLogic().GetSelectionNode().SetReferenceActiveTableID(resultTableNode.GetID())
     slicer.app.applicationLogic().PropagateTableSelection()
-    
-    
-    
+
+
+
 
     logging.info('Processing completed')
 

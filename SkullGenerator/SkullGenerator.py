@@ -67,7 +67,7 @@ class SkullGeneratorWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     self.ui.parameterNodeSelector.connect('currentNodeChanged(vtkMRMLNode*)', self.setParameterNode)
     self.ui.skullModel.connect("currentNodeChanged(vtkMRMLNode*)", self.updateParameterNodeFromGUI)
     self.ui.brainModel.connect("currentNodeChanged(vtkMRMLNode*)", self.updateParameterNodeFromGUI)
-    #button to combine skull and brain files and contact file    
+    #button to combine skull and brain files and contact file
     self.ui.comSkullBrainBtn.connect('clicked(bool)', self.onApplycomSkullBrainBtn)
 
     #self.ui.inputSelector.connect("currentNodeChanged(vtkMRMLNode*)", self.updateParameterNodeFromGUI)
@@ -124,7 +124,7 @@ class SkullGeneratorWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     wasBlocked = self.ui.skullModel.blockSignals(True)
     self.ui.skullModel.setCurrentNode(self._parameterNode.GetNodeReference("skullModel"))
     self.ui.skullModel.blockSignals(wasBlocked)
-    
+
     wasBlocked = self.ui.brainModel.blockSignals(True)
     self.ui.brainModel.setCurrentNode(self._parameterNode.GetNodeReference("brainModel"))
     self.ui.brainModel.blockSignals(wasBlocked)
@@ -136,7 +136,7 @@ class SkullGeneratorWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     #wasBlocked = self.ui.invertOutputCheckBox.blockSignals(True)
     #self.ui.invertOutputCheckBox.checked = (self._parameterNode.GetParameter("Invert") == "true")
     #self.ui.invertOutputCheckBox.blockSignals(wasBlocked)
-    
+
     wasBlocked = self.ui.tumorCheck.blockSignals(True)
     self.ui.tumorCheck.checked = (self._parameterNode.GetParameter("tumorCheck") == "true")
     self.ui.tumorCheck.blockSignals(wasBlocked)
@@ -170,9 +170,9 @@ class SkullGeneratorWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     except Exception as e:
       slicer.util.errorDisplay("Failed to compute results: "+str(e))
       import traceback
-      traceback.print_exc()  
-      
-      
+      traceback.print_exc()
+
+
   def onApplyButton(self):
     """
     Run processing when user clicks "Apply" button.
@@ -183,14 +183,14 @@ class SkullGeneratorWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     except Exception as e1:
         slicer.util.pip_install('meshio')
         import meshio
-        
+
     try:
       self.logic.run(self.ui.skullModel.currentNode(), self.ui.brainModel.currentNode(), self.ui.contactsFile.currentPath, self.ui.newSkullFile.currentPath, self.ui.tumorCheck.checked)
     except Exception as e:
       slicer.util.errorDisplay("Failed to compute results: "+str(e))
       import traceback
       traceback.print_exc()
-      
+
   def onPressDelSkullCells(self):
     """Run this to delete the skull elements"""
     try:
@@ -199,8 +199,8 @@ class SkullGeneratorWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
       slicer.util.errorDisplay("Failed to compute results: "+str(e))
       import traceback
       traceback.print_exc()
-      
-       
+
+
 
 #
 # SkullGeneratorLogic
@@ -221,29 +221,29 @@ class SkullGeneratorLogic(ScriptedLoadableModuleLogic):
       parameterNode.SetParameter("Threshold", "50.0")
     if not parameterNode.GetParameter("Invert"):
       parameterNode.SetParameter("Invert", "false")
-      
+
   def comSkullBrainContact(self, skullFile,skullNode, brainNode,contactFile, fullModelFile):
     logging.info('Processing started')
     print(skullFile)
     print(brainNode)
     dir_path = os.path.dirname(os.path.realpath(__file__))
-    
+
     #reading the model from slicer and saving the model temporarily and reading it through meshio againa s inp file
     skullModel= slicer.util.getNode(skullNode.GetID())
     properties = {'useCompression': 0};
     slicer.util.saveNode(skullModel,dir_path+"/skullModel.vtk",properties)
     skullModel_file = meshio.read(dir_path+"/skullModel.vtk")
-    
-    
+
+
     #reading the brain model and then doing the ame as for the skull model
     brainModel= slicer.util.getNode(brainNode.GetID())
     properties = {'useCompression': 0};
     slicer.util.saveNode(brainModel,dir_path+"/brainModel.vtk",properties)
     brain_volume = meshio.read(dir_path+"/brainModel.vtk")
-    
+
     brain_nodes = brain_volume.points
-    brain_tetra = brain_volume.cells_dict["tetra"] 
-    
+    brain_tetra = brain_volume.cells_dict["tetra"]
+
     skull_nodes = skullModel_file.points
     #initialise_new_nodes for the new file of brain biomechanics the inp complete file
     final_nodes = np.vstack((brain_nodes,skull_nodes))
@@ -253,31 +253,31 @@ class SkullGeneratorLogic(ScriptedLoadableModuleLogic):
         final_nodes2[idx,0] = a[0]/1000
         final_nodes2[idx,1] = a[1]/1000
         final_nodes2[idx,2] = a[2]/1000
-        
+
     meshio.write_points_cells(fullModelFile, final_nodes2, [("tetra",brain_tetra)])
-    
+
     #read the skull file that is generated
     skull_connectivity = open(skullFile,"r")
     content = skull_connectivity.read()
-    
+
     contacts = open(contactFile,"r")
     contact = contacts.read()
-    
+
     print(content)
     print(contact)
     # write in inp file the remaining things append witht eh skull and the contacts
-    
+
     with open (fullModelFile,"a+") as braininp:
         braininp.write("*Element, type=S3, ELSET=skull")
         braininp.write("\n"+ content)
-        braininp.write("*Nset, nset=contact")    
+        braininp.write("*Nset, nset=contact")
         braininp.write("\n" + contact)
 
-      
-      
-      
+
+
+
   def deleteSkullCells(self,cellFile, newSkullFile , skullNode, brainNode):
-    #run this to delete the cells on skull surface 
+    #run this to delete the cells on skull surface
     print("ok")
     dir_path = os.path.dirname(os.path.realpath(__file__))
     #reading the model from slicer and saving the model temporarily and reading it through meshio againa s inp file
@@ -286,11 +286,11 @@ class SkullGeneratorLogic(ScriptedLoadableModuleLogic):
     slicer.util.saveNode(skullModel,dir_path+"/skullModel.vtk",properties)
     skullModel_file = meshio.read(dir_path+"/skullModel.vtk")
     meshio.write(dir_path+"/skullModel.inp", skullModel_file)
-    
+
     skull = meshio.read(dir_path+"/skullModel.inp")
     skull_nodes = skull.points
     skull_tris = skull.cells_dict["triangle"]
-    
+
     print(skull_tris)
     #reading the cells to be deleted
     cell_File = np.loadtxt(cellFile, dtype=int)
@@ -298,10 +298,10 @@ class SkullGeneratorLogic(ScriptedLoadableModuleLogic):
     #Deleting the skull cells
     for i in range (0,len(cell_File)):
         np.delete(skull_tris, cell_File[i], 0)
-            
+
     meshio.write_points_cells(dir_path+"/skullModel.vtu",skull_nodes, [("triangle" ,skull_tris)])
     print(skull_tris)
-      
+
   def run(self, skullNode, brainNode, contactsFile, newSkullFile, tumorCheck=False):
     """
     Run the processing algorithm.
@@ -313,8 +313,8 @@ class SkullGeneratorLogic(ScriptedLoadableModuleLogic):
 
     logging.info('Processing started')
     dir_path = os.path.dirname(os.path.realpath(__file__))
-    
-    
+
+
     print(tumorCheck)
     #reading the model from slicer and saving the model temporarily and reading it through meshio againa s inp file
     skullModel= slicer.util.getNode(skullNode.GetID())
@@ -322,27 +322,27 @@ class SkullGeneratorLogic(ScriptedLoadableModuleLogic):
     slicer.util.saveNode(skullModel,dir_path+"/skullModel.vtk",properties)
     skullModel_file = meshio.read(dir_path+"/skullModel.vtk")
     meshio.write(dir_path+"/skullModel.inp", skullModel_file)
-    
+
     #reading the brain model and then doing the ame as for the skull model
     brainModel= slicer.util.getNode(brainNode.GetID())
     properties = {'useCompression': 0};
     slicer.util.saveNode(brainModel,dir_path+"/brainModel.vtk",properties)
     brainModel_file = meshio.read(dir_path+"/brainModel.vtk")
-    
+
     #nodes=brainModel_file.points
     #tetras=brainModel_file.cells_dict["tetra"]
     #meshio.write_points_cells("brainModel.inp",nodes,[("tetra",tetras)])
     meshio.write(dir_path+"/brainModel.inp", brainModel_file)
-    
+
     # Compute the thresholded output volume using the Threshold Scalar Volume CLI module
     skull = meshio.read(dir_path+"/skullModel.inp")
     skull_nodes = skull.points
     skull_tris = skull.cells_dict["triangle"]
-    
+
     brain_volume = meshio.read(dir_path+"/brainModel.inp")
     brain_nodes = brain_volume.points
-    brain_tetra = brain_volume.cells_dict["tetra"] 
-    
+    brain_tetra = brain_volume.cells_dict["tetra"]
+
     #change normals from outwards to inwards
     skull_tris_reorder = np.zeros([skull_tris.shape[0],3], dtype = object)
     for i in range (0,skull_tris.shape[0]):
@@ -350,7 +350,7 @@ class SkullGeneratorLogic(ScriptedLoadableModuleLogic):
         skull_tris_reorder[i,1] = skull_tris[i,2]
         skull_tris_reorder[i,2] = skull_tris[i,1]
     skull_tris = skull_tris_reorder
-    
+
     #changing all nodes of skull and brain to mm dividing by thousand and combining all the skull and brain nodes as well final_nodes2 contain all nodes of skull +brain
     final_nodes = np.vstack((brain_nodes,skull_nodes))
     final_nodes2 =  np.ndarray((final_nodes.shape[0],3), dtype=object)
@@ -358,10 +358,10 @@ class SkullGeneratorLogic(ScriptedLoadableModuleLogic):
         a = np.array([points[0], points[1], points[2]])
         final_nodes2[idx,0] = a[0]/1000
         final_nodes2[idx,1] = a[1]/1000
-        final_nodes2[idx,2] = a[2]/1000     
-    
+        final_nodes2[idx,2] = a[2]/1000
+
     contacts=[]
-    if tumorCheck=='False':        
+    if tumorCheck=='False':
         #get connectivity nget contacts
         for i in range (0,skull_tris.shape[0]):
             print(skull_tris[i,0])
@@ -383,10 +383,10 @@ class SkullGeneratorLogic(ScriptedLoadableModuleLogic):
                 if a1 == b1 and a2 == b2 and a3 == b3:
                     contacts.append(j+1)
                     break
-    contacts.sort() 
-    
-    
-        
+    contacts.sort()
+
+
+
     print(contacts)
     np.savetxt(contactsFile+".txt",contacts,fmt = '%d', newline = '\n')
     #writing to file 8 in each line
@@ -396,9 +396,9 @@ class SkullGeneratorLogic(ScriptedLoadableModuleLogic):
      f.write(",")
      if (i+1) % 8 == 0 and i < len(contacts):
          f.write("\n")
-    
-    f.close()  
-     
+
+    f.close()
+
     #changing skull triangle cell ids and make it start after the tetrahedrals for this adding the brain total element number +1 to each skull id number
     brain_volume_nodes_length = brain_nodes.shape[0]
     skull_tris2 = skull_tris + brain_volume_nodes_length + 1
@@ -407,12 +407,12 @@ class SkullGeneratorLogic(ScriptedLoadableModuleLogic):
     for i in range (0,skull_tris2.shape[0]):
         skull_tris_file[i,0] = i+1+brain_tetra.shape[0]
         skull_tris_file[i,1:] = skull_tris2[i]
-    np.savetxt(newSkullFile,skull_tris_file,fmt = '%d, %d, %d, %d', newline = '\n')      
-   
+    np.savetxt(newSkullFile,skull_tris_file,fmt = '%d, %d, %d, %d', newline = '\n')
 
 
-    
-    
+
+
+
     logging.info('Processing completed')
 
 #

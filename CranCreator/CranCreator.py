@@ -266,21 +266,21 @@ class CranCreatorWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     #self._parameterNode.SetNodeReferenceID("OutputVolumeInverse", self.ui.invertedOutputSelector.currentNodeID)
 
     self._parameterNode.EndModify(wasModified)
-    
+
   def onCranApplyButton(self):
     """
     on apply run cran to subtract two masks and get the cran region
     """
     try:
         self.logic.cranCreator(self.ui.inputSelector.currentNode(), self.ui.preopSegment.currentNode(), self.ui.preopSegment.currentSegmentID(), self.ui.intraopSegment.currentNode(), self.ui.intraopSegment.currentSegmentID())
-        
-          
+
+
     except Exception as e:
      slicer.util.errorDisplay("Failed to compute results: "+str(e))
      import traceback
-     traceback.print_exc() 
+     traceback.print_exc()
 
-   
+
 
   def onApplyButton(self):
     """
@@ -332,16 +332,16 @@ class CranCreatorLogic(ScriptedLoadableModuleLogic):
       parameterNode.SetParameter("Invert", "false")
 
   def cranCreator(self, nvol, preopSegmentationNode, preopSegment, intraopSegmentationNode, intraopSegment):
-    #print("do nothing for now")  
-    
-    #create a anew segmentation and delete the csf, wm, gm from the brain combine the remaining brain with csf 
+    #print("do nothing for now")
+
+    #create a anew segmentation and delete the csf, wm, gm from the brain combine the remaining brain with csf
     segmentationNode1 = slicer.vtkMRMLSegmentationNode()
     slicer.mrmlScene.AddNode(segmentationNode1)
     segmentationNode1.CreateDefaultDisplayNodes() # only needed for display
-    
+
     preopSegment1 = preopSegmentationNode.GetSegmentation().GetSegment(preopSegment)
     intraopSegment1 = intraopSegmentationNode.GetSegmentation().GetSegment(intraopSegment)
-      
+
     segmentationNode1.GetSegmentation().CopySegmentFromSegmentation(intraopSegmentationNode.GetSegmentation(), intraopSegment)
     segmentationNode1.GetSegmentation().CopySegmentFromSegmentation(preopSegmentationNode.GetSegmentation(), preopSegment)
     #segmentationNode1.GetSegmentation().GetSegment(preopSegment).SetName("preop")
@@ -357,31 +357,31 @@ class CranCreatorLogic(ScriptedLoadableModuleLogic):
     segmentEditorNode = slicer.vtkMRMLSegmentEditorNode()
     #segmentEditorWidget.setMasterVolumeNode(wholeBrain)
     #segmentEditorNode.SetOverwriteMode(slicer.vtkMRMLSegmentEditorNode.OverwriteNone)
-    segmentEditorNode.SetOverwriteMode(2) 
+    segmentEditorNode.SetOverwriteMode(2)
     #segmentEditorNode.SetOverwriteMode(1)
-    
+
     slicer.mrmlScene.AddNode(segmentEditorNode)
     segmentEditorWidget.setMRMLSegmentEditorNode(segmentEditorNode)
     segmentEditorWidget.setSegmentationNode(segmentationNode1)
     segmentEditorWidget.setMasterVolumeNode(nvol)
-        
-    
+
+
     preopSegment1 = segmentationNode1.GetSegmentation().GetSegmentIdBySegmentName("intraop")
     intraopSegment1 = segmentationNode1.GetSegmentation().GetSegmentIdBySegmentName("cran")
     segmentationNode1.GetSegmentation().GetSegment(intraopSegment1).SetColor(0,0,255/255)
 
-    
+
     print(preopSegment1)
     print(intraopSegment1)
-         
+
     #subtract one segment from another
     segmentEditorWidget.setActiveEffectByName("Logical operators")
     effect = segmentEditorWidget.activeEffect()
     effect.setParameter("Operation", "SUBTRACT")
-    effect.setParameter("ModifierSegmentID",preopSegment1) 
+    effect.setParameter("ModifierSegmentID",preopSegment1)
     segmentEditorWidget.setCurrentSegmentID(intraopSegment1)
     effect.self().onApply()
-    
+
     segmentEditorWidget.setActiveEffectByName("Islands")
     effect = segmentEditorWidget.activeEffect()
     operationName = 'KEEP_LARGEST_ISLAND'
@@ -389,7 +389,7 @@ class CranCreatorLogic(ScriptedLoadableModuleLogic):
     effect.setParameter("Operation", operationName)
     effect.setParameter("MinimumSize",minsize)
     effect.self().onApply()
- 
+
 
   def process(self, inputVolume):
     """
@@ -423,7 +423,7 @@ class CranCreatorLogic(ScriptedLoadableModuleLogic):
     segmentationNode = slicer.mrmlScene.AddNewNodeByClass("vtkMRMLSegmentationNode")
     segmentationNode.CreateDefaultDisplayNodes() # only needed for display
     segmentationNode.SetReferenceImageGeometryParameterFromVolumeNode(inputVolume)
-    
+
     # Create temporary segment editor to get access to effects
     segmentEditorWidget = slicer.qMRMLSegmentEditorWidget()
     segmentEditorWidget.setMRMLScene(slicer.mrmlScene)
@@ -431,11 +431,11 @@ class CranCreatorLogic(ScriptedLoadableModuleLogic):
     segmentEditorWidget.setMRMLSegmentEditorNode(segmentEditorNode)
     segmentEditorWidget.setSegmentationNode(segmentationNode)
     segmentEditorWidget.setMasterVolumeNode(inputVolume)
-    
+
     # Create a new segment in segemnt editor effects
     addedSegmentID = segmentationNode.GetSegmentation().AddEmptySegment("cran")
     segmentEditorNode.SetSelectedSegmentID(addedSegmentID)
-    
+
     # thresholding
     #getting bone threshold value min and maximum
     import vtkITK
@@ -446,8 +446,8 @@ class CranCreatorLogic(ScriptedLoadableModuleLogic):
     boneThresholdValue = thresholdCalculator.GetThreshold()
     volumeScalarRange = inputVolume.GetImageData().GetScalarRange()
     logging.info("Volume minimum = {0}, maximum = {1}, bone threshold = {2}".format(volumeScalarRange[0], volumeScalarRange[1], boneThresholdValue))
-    
-    
+
+
     #applying threshold effect
     segmentEditorWidget.setActiveEffectByName("Threshold")
     effect = segmentEditorWidget.activeEffect()
@@ -458,9 +458,9 @@ class CranCreatorLogic(ScriptedLoadableModuleLogic):
     #effect.setParameter("AutoThresholdMethod", "OTSU")
     #effect.setParameter("AutoThresholdMode","SET_UPPER")
     effect.self().onApply()
-    
-    
-    #use shrink wrapping to wrap the bone and get the full surface 
+
+
+    #use shrink wrapping to wrap the bone and get the full surface
     segmentEditorWidget.setActiveEffectByName("Wrap Solidify")
     effect = segmentEditorWidget.activeEffect()
     segmentEditorWidget.setCurrentSegmentID(segmentationNode.GetSegmentation().GetSegmentIdBySegmentName("cran"))
@@ -475,13 +475,13 @@ class CranCreatorLogic(ScriptedLoadableModuleLogic):
     effect.setParameter("outputType", "segment")
     #effect.setParameter("outputModelNode", segmentName)
     effect.self().onApply()
-    
-    
+
+
     #create a new method to subtract one segment from another
     # segmentEditorWidget.setActiveEffectByName("Logical operators")
     # effect = segmentEditorWidget.activeEffect()
     # effect.setParameter("Operation", "SUBTRACT")
-    # effect.setParameter("ModifierSegmentID",wmSelector) 
+    # effect.setParameter("ModifierSegmentID",wmSelector)
     # segmentEditorWidget.setCurrentSegmentID(brainSelector)
     # effect.self().onApply()
     #segmentEditorNode.SetOverwriteMode(slicer.vtkMRMLSegmentEditorNode.OverwriteNone)
@@ -492,8 +492,8 @@ class CranCreatorLogic(ScriptedLoadableModuleLogic):
     # segmentationNode.GetSegmentation().SetConversionParameter("Smoothing factor",str(modelSmoothing))
     # segmentationNode.GetSegmentation().SetConversionParameter("Decimation factor", "0.00")
     # segmentationNode.CreateClosedSurfaceRepresentation()
-    
-    
+
+
 
     stopTime = time.time()
     logging.info('Processing completed in {0:.2f} seconds'.format(stopTime-startTime))

@@ -74,7 +74,7 @@ class TumorResectionAndBRainRemodellingWidget(ScriptedLoadableModuleWidget, VTKO
 
     self.ui.tumorMask.connect("currentNodeChanged(vtkMRMLNode*)", self.updateParameterNodeFromGUI)
     self.ui.brainModel.connect("currentNodeChanged(vtkMRMLNode*)", self.updateParameterNodeFromGUI)
-    
+
 
     self.ui.rBrainModel.connect("currentNodeChanged(vtkMRMLNode*)", self.updateParameterNodeFromGUI)
     self.ui.applyButton.connect('clicked(bool)', self.onApplyButton)
@@ -129,7 +129,7 @@ class TumorResectionAndBRainRemodellingWidget(ScriptedLoadableModuleWidget, VTKO
     wasBlocked = self.ui.brainModel.blockSignals(True)
     self.ui.brainModel.setCurrentNode(self._parameterNode.GetNodeReference("OutputVolume"))
     self.ui.brainModel.blockSignals(wasBlocked)
-    
+
     wasBlocked = self.ui.rBrainModel.blockSignals(True)
     self.ui.rBrainModel.setCurrentNode(self._parameterNode.GetNodeReference("rOutputVolume"))
     self.ui.rBrainModel.blockSignals(wasBlocked)
@@ -155,7 +155,7 @@ class TumorResectionAndBRainRemodellingWidget(ScriptedLoadableModuleWidget, VTKO
     self._parameterNode.SetNodeReferenceID("OutputVolume", self.ui.brainModel.currentNodeID)
     self._parameterNode.SetNodeReferenceID("rOutputVolume", self.ui.rBrainModel.currentNodeID)
 
-    
+
 
   def onApplyButton(self):
     """
@@ -164,7 +164,7 @@ class TumorResectionAndBRainRemodellingWidget(ScriptedLoadableModuleWidget, VTKO
     try:
         import mvloader.nrrd as mvnrrd
         import nrrd
-        import numpy as np  
+        import numpy as np
         import meshio
     except ModuleNotFoundError as e:
         if slicer.util.confirmOkCancelDisplay("This module requires 'nrrd, mvloader, meshio' Python package. Click OK to install."):
@@ -174,8 +174,8 @@ class TumorResectionAndBRainRemodellingWidget(ScriptedLoadableModuleWidget, VTKO
             import nrrd
             import mvloader.nrrd as mvnrrd
             import meshio
-    
-    
+
+
     try:
       self.logic.run(self.ui.tumorMask.currentNode(), self.ui.brainModel.currentNode(),self.ui.rBrainModel.currentNode(), self.ui.iNodesBefore.currentPath, self.ui.iNodesAfter.currentPath)
     except Exception as e:
@@ -220,62 +220,62 @@ class TumorResectionAndBRainRemodellingLogic(ScriptedLoadableModuleLogic):
     print(dir_path)
     node = slicer.util.getNode(tumorMask.GetID())
     slicer.util.saveNode(node,dir_path+"/tumour.seg.nrrd")
-    
+
     tumour_mask = mvnrrd.open_image(dir_path+"/tumour.seg.nrrd")
     tumour_voxel, header = nrrd.read(dir_path+"/tumour.seg.nrrd")
     voxels2world = tumour_mask.src_transformation
     world2voxels = np.linalg.inv(voxels2world)
-    
+
     homogeneous = lambda c3d: np.r_[c3d, 1]
-    
+
     #read brain node
     brainModel = slicer.util.getNode(brainModel.GetID())
     slicer.util.saveNode(brainModel,dir_path+"/brainModel.vtk")
     brainModel_1 = meshio.read(dir_path+"/brainModel.vtk")
     brain_nodes = brainModel_1.points
-    brain_tetra = brainModel_1.cells_dict["tetra"] 
+    brain_tetra = brainModel_1.cells_dict["tetra"]
     brain_nodes = brainModel_1.points
     tetras = tris = brainModel_1.cells_dict["tetra"]
-    
+
     print("-------------------------read brain mesh done!--------------------------------")
-    
+
     brain_nodes_new  = np.zeros([brain_nodes.shape[0],4])
     brain_tetras_new = np.zeros([tetras.shape[0],5])
-    
+
     #create brain_nodes with id
-    
+
     for i in range (0,brain_nodes.shape[0]):
         brain_nodes_new[i,0] = int(i+1)
         brain_nodes_new[i,1:] = brain_nodes[i]
-    
+
     #create brain_tetras with id
-    
+
     for ii in range (0,tetras.shape[0]):
         brain_tetras_new[ii,0] = int(ii+1)
         brain_tetras_new[ii,1:] = tetras[ii]+1
-        
+
     #initialise tumour nodes
-     
-    print("---------------------Initialise tumour nodes!----------------------------------")    
+
+    print("---------------------Initialise tumour nodes!----------------------------------")
     tumour_nodes = []
     #tumour nodes collection
-    
+
     for idx, pts in enumerate (brain_nodes_new):
         x  = np.array([pts[1], pts[2], pts[3]])
         voxel_idxs = world2voxels[:3] @homogeneous(x)
-        iv, jv, kv = voxel_idxs.astype(np.int) 
+        iv, jv, kv = voxel_idxs.astype(np.int)
         if tumour_voxel[iv, jv, kv] != 0:
             tumour_nodes.append(pts)
-    
-            
+
+
     tumour_nodes = np.array(tumour_nodes)
-    
+
     print("---------------------------tumour nodes collection done--------------------------")
-    
+
     #generate tumour_nodes_id-----can be used in abaqus inp file
-    
+
     tumour_idx = tumour_nodes[:,0]
-    
+
     with open(dir_path+"/tumour_idx.txt","w") as f:
         for t_idx in range (0,tumour_idx.shape[0]):
             if (t_idx+1)%16 == 0:
@@ -283,8 +283,8 @@ class TumorResectionAndBRainRemodellingLogic(ScriptedLoadableModuleLogic):
                 f.write("%d\n" %s)
             else:
                 s = int(tumour_idx[t_idx])
-                f.write("%d," %s)        
-    
+                f.write("%d," %s)
+
     print("tumour_idx.txt saved, there are",tumour_idx.shape[0],"tumour nodes")
     print("--------------------------start tumour element id--------------------------------------")
     #generate tumour_ele_id-----can be used in abaqus inp file
@@ -292,11 +292,11 @@ class TumorResectionAndBRainRemodellingLogic(ScriptedLoadableModuleLogic):
     tumour_ele_idx = []
     non_tumour_element_idx = brain_tetras_new[:,0]
     new_non_tumour_element_idx = []
-    
+
     #for item in non_tumour_element_idx:
         #new_non_tumour_element_idx.append(int(item))
-        
-    #new_non_tumour_element_idx = np.array(new_non_tumour_element_idx)    
+
+    #new_non_tumour_element_idx = np.array(new_non_tumour_element_idx)
     #non_tumour_element_idx = new_non_tumour_element_idx
     for idx, pts in enumerate (tumour_idx):
         if idx%50 == 0:
@@ -310,19 +310,19 @@ class TumorResectionAndBRainRemodellingLogic(ScriptedLoadableModuleLogic):
             tetra_4 = int(brain_tetras_new[i,4])
             if t_idx == tetra_1 or t_idx == tetra_2 or t_idx == tetra_3 or t_idx == tetra_4:
                 tumour_ele_idx.append(tetra_id)
-    
+
     tumour_ele_idx = list(dict.fromkeys(tumour_ele_idx))
-    
-    
+
+
     for item in non_tumour_element_idx:
         if item not in tumour_ele_idx:
             new_non_tumour_element_idx.append(item)
-        
-    tumour_ele_idx=np.array(tumour_ele_idx)  
+
+    tumour_ele_idx=np.array(tumour_ele_idx)
     new_non_tumour_element_idx= np.array(new_non_tumour_element_idx)
-    
+
     print("----------------------------tumour_ele_idx obtained--------------------------------")
-    
+
     with open(dir_path+"/tumour_ele_idx.txt","w") as f:
         for t_idx in range (0,tumour_ele_idx.shape[0]):
             if (t_idx+1)%16 == 0:
@@ -330,17 +330,17 @@ class TumorResectionAndBRainRemodellingLogic(ScriptedLoadableModuleLogic):
                 f.write("%d\n" %s)
             else:
                 s = int(tumour_ele_idx[t_idx])
-                f.write("%d," %s)  
-    
+                f.write("%d," %s)
+
     print("------------------------------tumour_ele_idx.txt saved-----------------------------------")
     print("there are",tumour_ele_idx.shape[0],"tumour elements")
     ####check sharing nodes
-    print("-------------------------------sharing_nodes_id start------------------------------------")            
+    print("-------------------------------sharing_nodes_id start------------------------------------")
     sharing_nodes_id=[]
-    
+
     for i in range (0,tumour_ele_idx.shape[0]):
         if i%50 == 0:
-            print("tumour_ele_idx comes to",i,"/",tumour_ele_idx.shape[0],".")        
+            print("tumour_ele_idx comes to",i,"/",tumour_ele_idx.shape[0],".")
         tum_ele_id = tumour_ele_idx[i]
         tum_tetra_nodes_id = brain_tetras_new[tum_ele_id-1]
         tri_1 = int(tum_tetra_nodes_id[1])
@@ -364,7 +364,7 @@ class TumorResectionAndBRainRemodellingLogic(ScriptedLoadableModuleLogic):
                 sharing_nodes_id.append(tri_3)
             elif tri_4 == non_tri_1 or tri_4 == non_tri_2 or tri_4 == non_tri_3 or tri_4 == non_tri_4:
                 sharing_nodes_id.append(tri_4)
-    
+
     print("sharing nodes collection done")
     sharing_nodes_id = list(dict.fromkeys(sharing_nodes_id))
     sharing_nodes_id = np.array(sharing_nodes_id)
@@ -375,63 +375,63 @@ class TumorResectionAndBRainRemodellingLogic(ScriptedLoadableModuleLogic):
                 f.write("%d\n" %s)
             else:
                 s = int(sharing_nodes_id[t_idx])
-                f.write("%d," %s)  
-    
+                f.write("%d," %s)
+
     #get sharing nodes coordinate
-            
+
     sharing_nodes_coordinate = np.zeros([sharing_nodes_id.shape[0],4])
-    
+
     for i in range (0,sharing_nodes_id.shape[0]):
         sharing_nodes_coordinate[i,0] = sharing_nodes_id[i]
         sharing_nodes_coordinate[i,1:] = brain_nodes[int(sharing_nodes_coordinate[i,0]-1)]
-    
+
     np.savetxt(dir_path+'/***sharing_nodes_coordinate***.txt',sharing_nodes_coordinate, fmt = "%d, %.8f, %.8f, %.8f",
                newline = '\n')
     print("sharing nodes txt saved")
-    
+
     #reconstructing brain model file
     #brainmesh = meshio.read("brain_model/brainmask_auto.inp")
     brainmesh = meshio.read(dir_path+"/brainModel.vtk")
     brain_nodes = brainmesh.points
     tetras = brainmesh.cells_dict["tetra"]
-    
-    
+
+
     brain_nodes_new1  = np.zeros([brain_nodes.shape[0],4])
     brain_tetras_new1 = np.zeros([tetras.shape[0],5])
-    
+
     #create brain_nodes with id
-    
+
     for i in range (0,brain_nodes.shape[0]):
         brain_nodes_new1[i,0] = int(i+1)
         brain_nodes_new1[i,1:] = brain_nodes[i]
-    
+
     #create brain_tetras with id
-    
+
     for ii in range (0,tetras.shape[0]):
         brain_tetras_new1[ii,0] = int(ii+1)
         brain_tetras_new1[ii,1:] = tetras[ii]+1
-        
-        
+
+
     #extract tumour_id
-    
+
     tumour_idx_file = open(dir_path+"/tumour_idx.txt","r")
     data = tumour_idx_file.read().replace("\n", ",")
     data = list(data.split(","))
     data.remove('')
     tumour_idx_file.close()
     tumour_id = np.array(data)
-    
+
     #extract tumour element id
-    
+
     tumour_ele_idx_file = open(dir_path+"/tumour_ele_idx.txt","r")
     data2 = tumour_ele_idx_file.read().replace("\n",",")
     data2 = list(data2.split(","))
     data2.remove('')
     tumour_ele_idx_file.close()
     tumour_ele_idx = np.array(data2)
-    
-    
-    #get tumour ele nodes info 
+
+
+    #get tumour ele nodes info
     tumour_ele_nodes = np.zeros([tumour_ele_idx.shape[0],5])
     for i in range (0,tumour_ele_idx.shape[0]):
         tumour_ele_nodes[i,0] = tumour_ele_idx[i]
@@ -443,9 +443,9 @@ class TumorResectionAndBRainRemodellingLogic(ScriptedLoadableModuleLogic):
         tumour_ele_nodes2.append(tumour_ele_nodes_number[i,1])
         tumour_ele_nodes2.append(tumour_ele_nodes_number[i,2])
         tumour_ele_nodes2.append(tumour_ele_nodes_number[i,3])
-        
+
     tumour_ele_nodes2 = list(dict.fromkeys(tumour_ele_nodes2))
-    
+
     #extract sharing nodes coordinate
     #node id   x   y   z
     sharing_nodes_coordinate = np.genfromtxt(dir_path+"/***sharing_nodes_coordinate***.txt",delimiter = ',')
@@ -456,26 +456,26 @@ class TumorResectionAndBRainRemodellingLogic(ScriptedLoadableModuleLogic):
     for item in tumour_ele_nodes2:
         if item not in sharing_nodes_id:
             t.append(item)
-        
+
     final_tumour_nodes_id = np.array(t)
     # tumour nodes coordinate
     tumour_nodes_coordinate = np.zeros([final_tumour_nodes_id.shape[0],4])
     for i in range (0,final_tumour_nodes_id.shape[0]):
         tumour_nodes_coordinate[i,0] = int(final_tumour_nodes_id[i])
         tumour_nodes_coordinate[i,1:] = brain_nodes[int(tumour_nodes_coordinate[i,0] -1)]
-    
+
     # tumour element info
     tumour_element = np.zeros([tumour_ele_idx.shape[0],5])
     for i in range (0,tumour_ele_idx.shape[0]):
         tumour_element[i,0] = int(tumour_ele_idx[i])
         tumour_element[i] = brain_tetras_new1[int(tumour_element[i,0]-1)]
-    
-    
-    
-    
-    
+
+
+
+
+
     #create new nodes id
-    
+
     brain_nodes_reconstructed = np.zeros([brain_nodes_new1.shape[0]-tumour_nodes_coordinate.shape[0],4])
     brain_tetras_reconstructed = np.zeros([brain_tetras_new1.shape[0]-tumour_element.shape[0],5], dtype = int)
     bnr_i = 0
@@ -484,29 +484,29 @@ class TumorResectionAndBRainRemodellingLogic(ScriptedLoadableModuleLogic):
         if brain_nodes_id not in tumour_nodes_coordinate[:,0]:
             brain_nodes_reconstructed[bnr_i] = brain_nodes_new1[i]
             bnr_i = bnr_i+1
-            
+
     btr_i = 0
     for i in range (0,brain_tetras_new1.shape[0]):
         brain_tetra_id = brain_tetras_new1[i,0]
         if brain_tetra_id not in tumour_element[:,0]:
             brain_tetras_reconstructed[btr_i] = brain_tetras_new1[i]
             btr_i = btr_i+1
-     
+
     #create stl/inp file
     re_brain_nodes = brain_nodes_reconstructed[:,1:]
     #re_tetras = brain_tetras_reconstructed[:,1:]-1
-    
-    
-    
+
+
+
     brain_nodes_no_tumour = np.zeros([re_brain_nodes.shape[0],4])
     brain_tetra_no_tumour = np.zeros([brain_tetras_reconstructed.shape[0],5], dtype = int)
-    
+
     for i in range (0,re_brain_nodes.shape[0]):
         brain_nodes_no_tumour[i,0] = int(i+1)
         brain_nodes_no_tumour[i,1:] = re_brain_nodes[i]
-        
-        
-    brain_nodes_pair = np.zeros([brain_nodes_new1.shape[0],2])    
+
+
+    brain_nodes_pair = np.zeros([brain_nodes_new1.shape[0],2])
     for i in range (0,brain_nodes_new1.shape[0]):
         brain_nodes_pair[i,0] = i+1
         nodes_new = brain_nodes_new1[i,1:]
@@ -515,9 +515,9 @@ class TumorResectionAndBRainRemodellingLogic(ScriptedLoadableModuleLogic):
             brain_nodes_pair[i,1] = nodes_new_id[0][0] +1
         else:
             brain_nodes_pair[i,1] = 0
-    
-    
-    brain_tetras_reconstructed_no_idx  = brain_tetras_reconstructed[:,1:]    
+
+
+    brain_tetras_reconstructed_no_idx  = brain_tetras_reconstructed[:,1:]
     for i in range (0,brain_tetras_reconstructed.shape[0]):
         brain_tetra_no_tumour[i,0] = i+1
         t1 = int(brain_nodes_pair[brain_tetras_reconstructed_no_idx[i,0]-1,1])
@@ -525,21 +525,21 @@ class TumorResectionAndBRainRemodellingLogic(ScriptedLoadableModuleLogic):
         t3 = int(brain_nodes_pair[brain_tetras_reconstructed_no_idx[i,2]-1,1])
         t4 = int(brain_nodes_pair[brain_tetras_reconstructed_no_idx[i,3]-1,1])
         brain_tetra_no_tumour[i,1:] = [t1,t2,t3,t4]
-    
-    
-        
+
+
+
     np.savetxt(dir_path+'/brain_tetra_new_re1.txt',brain_tetra_no_tumour, fmt="%d, %d, %d, %d, %d",
-               newline = '\n')    
-    
+               newline = '\n')
+
     np.savetxt(dir_path+"/brain_nodes_new1_re1.txt",brain_nodes_no_tumour,fmt = "%d, %.8f, %.8f, %.8f",
-               newline = '\n')   
-        
+               newline = '\n')
+
     re_brain_nodes = re_brain_nodes
     re_tetras2 = brain_tetra_no_tumour[:,1:]-1
-    
+
     meshio.write_points_cells(dir_path+"/re_brain1.vtu", re_brain_nodes, [("tetra",re_tetras2)])
     rBrainModel = slicer.util.loadModel(dir_path+"/re_brain1.vtu")
-    
+
     sharing_nodes_coordinate
     sharing_nodes_coordinate_re = np.zeros([sharing_nodes_coordinate.shape[0],5])
     #node id, x, y, z, cooresponding_node_id in previous model
