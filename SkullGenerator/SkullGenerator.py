@@ -17,8 +17,8 @@ class SkullGenerator(ScriptedLoadableModule):
 
   def __init__(self, parent):
     ScriptedLoadableModule.__init__(self, parent)
-    self.parent.title = "SkullGenerator"  # TODO: make this more human readable by adding spaces
-    self.parent.categories = ["CBM.Biomechanical"]  # TODO: set categories (folders where the module shows up in the module selector)
+    self.parent.title = "Skull Generator"
+    self.parent.categories = ["CBM.Biomechanical"]
     self.parent.dependencies = []  # TODO: add here list of module names that this module requires
     self.parent.contributors = ["Saima Safdar"]  # TODO: replace with "Firstname Lastname (Organization)"
     self.parent.helpText = """

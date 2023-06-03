@@ -15,10 +15,10 @@ class MTLEDSimulator(ScriptedLoadableModule):
 
   def __init__(self, parent):
     ScriptedLoadableModule.__init__(self, parent)
-    self.parent.title = "MTLEDSimulator" # TODO make this more human readable by adding spaces
-    self.parent.categories = ["CBM.Biomechanical.Solver"]
+    self.parent.title = "MTLED Simulator"
+    self.parent.categories = ["CBM.Physics.Mechanics.Solver"]
     self.parent.dependencies = []
-    self.parent.contributors = ["saima safdar"] # replace with "Firstname Lastname (Organization)"
+    self.parent.contributors = ["Saima Safdar"] # replace with "Firstname Lastname (Organization)"
     self.parent.helpText = """
 It computes brain deformation using Meshless total lagrangian explicit dynamic algorithm MTLED.
 """

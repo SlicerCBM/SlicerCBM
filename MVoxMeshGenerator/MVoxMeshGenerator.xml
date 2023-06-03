@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <executable>
-  <category>CBM.Mesh</category>
+  <category>CBM.Mesh/Grid</category>
   <title>MVox Mesh Generator</title>
   <description><![CDATA[Create a hexahedral mesh using MVox]]></description>
   <version>0.1.0.</version>

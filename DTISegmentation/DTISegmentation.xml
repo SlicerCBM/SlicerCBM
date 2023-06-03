@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <executable>
-  <category>CBM.Segmentations</category>
+  <category>CBM.Segmentation</category>
   <title>DTI Segmentation</title>
   <description><![CDATA[Segment DTI into gray matter, white matter and CSF using fuzzy C-means clustering (FCM) algorithm.]]></description>
   <version>0.1.0.</version>

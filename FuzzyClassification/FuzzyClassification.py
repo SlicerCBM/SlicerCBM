@@ -16,8 +16,8 @@ class FuzzyClassification(ScriptedLoadableModule):
 
   def __init__(self, parent):
     ScriptedLoadableModule.__init__(self, parent)
-    self.parent.title = "FuzzyClassification"  # TODO: make this more human readable by adding spaces
-    self.parent.categories = ["CBM.Biomechanical.Property"]  # TODO: set categories (folders where the module shows up in the module selector)
+    self.parent.title = "Fuzzy Classification"
+    self.parent.categories = ["CBM.Physics.Mechanics.Property"]
     self.parent.dependencies = []  # TODO: add here list of module names that this module requires
     self.parent.contributors = ["Saima Safdar"]  # TODO: replace with "Firstname Lastname (Organization)"
     self.parent.helpText = """
