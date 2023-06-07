@@ -312,6 +312,10 @@ class SkullGeneratorLogic(ScriptedLoadableModuleLogic):
       raise ValueError("Input or output volume is invalid")"""
 
     logging.info('Processing started')
+
+    import meshio
+
+    # FIXME: use temporary directory
     dir_path = os.path.dirname(os.path.realpath(__file__))
 
 
