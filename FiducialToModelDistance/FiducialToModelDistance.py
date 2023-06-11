@@ -221,7 +221,7 @@ class FiducialToModelDistanceLogic(ScriptedLoadableModuleLogic):
     distanceFilter = vtk.vtkImplicitPolyDataDistance()
     distanceFilter.SetInput(surface_World);
     nOfFiduciallPoints = markupsNode.GetNumberOfFiducials()
-    for i in range(0, nOfFiduciallPoints):
+    for i in range(nOfFiduciallPoints):
       point_World = [0,0,0]
       markupsNode.GetNthControlPointPositionWorld(i, point_World)
       closestPointOnSurface_World = [0,0,0]
