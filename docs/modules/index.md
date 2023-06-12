@@ -17,6 +17,7 @@
 :maxdepth: 1
 
 Computational Grid Generator <mesh-grid/computational-grid-generator.md>
+Create Head Tetrahedral Grid <mesh-grid/CreateHeadTetrahedralGrid.md>
 ```
 
 ```{toctree}

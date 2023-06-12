@@ -19,19 +19,16 @@ class CreateHeadTetrahedralGrid(ScriptedLoadableModule):
 
     def __init__(self, parent):
         ScriptedLoadableModule.__init__(self, parent)
-        self.parent.title = "CreateHeadTetrahedralGrid"  # TODO: make this more human readable by adding spaces
-        self.parent.categories = ["Examples"]  # TODO: set categories (folders where the module shows up in the module selector)
-        self.parent.dependencies = []  # TODO: add here list of module names that this module requires
-        self.parent.contributors = ["John Doe (AnyWare Corp.)"]  # TODO: replace with "Firstname Lastname (Organization)"
-        # TODO: update with short description of the module and a link to online module documentation
+        self.parent.title = "Create Head Tetrahedral Grid"
+        self.parent.categories = ["CBM.Mesh/Grid"]
+        self.parent.dependencies = []
+        self.parent.contributors = ["Benjamin Zwick"]
         self.parent.helpText = """
-This is an example of scripted loadable module bundled in an extension.
-See more information in <a href="https://github.com/organization/projectname#CreateHeadTetrahedralGrid">module documentation</a>.
+Create brain volume and skull surface mesh from brain surface model, and save as a '.inp' mesh file.
+See more information in <a href="https://slicercbm.org/en/latest/modules/mesh-grid/CreateHeadTetrahedralGrid.html">module documentation</a>.
 """
-        # TODO: replace with organization, grant and thanks
         self.parent.acknowledgementText = """
-This file was originally developed by Jean-Christophe Fillion-Robin, Kitware Inc., Andras Lasso, PerkLab,
-and Steve Pieper, Isomics, Inc. and was partially funded by NIH grant 3P41RR013218-12S1.
+This file was originally developed by Benjamin Zwick.
 """
 
         # Additional initialization step after application startup is complete
@@ -55,37 +52,7 @@ def registerSampleData():
     # To ensure that the source code repository remains small (can be downloaded and installed quickly)
     # it is recommended to store data sets that are larger than a few MB in a Github release.
 
-    # CreateHeadTetrahedralGrid1
-    SampleData.SampleDataLogic.registerCustomSampleDataSource(
-        # Category and sample name displayed in Sample Data module
-        category='CreateHeadTetrahedralGrid',
-        sampleName='CreateHeadTetrahedralGrid1',
-        # Thumbnail should have size of approximately 260x280 pixels and stored in Resources/Icons folder.
-        # It can be created by Screen Capture module, "Capture all views" option enabled, "Number of images" set to "Single".
-        thumbnailFileName=os.path.join(iconsPath, 'CreateHeadTetrahedralGrid1.png'),
-        # Download URL and target file name
-        uris="https://github.com/Slicer/SlicerTestingData/releases/download/SHA256/998cb522173839c78657f4bc0ea907cea09fd04e44601f17c82ea27927937b95",
-        fileNames='CreateHeadTetrahedralGrid1.nrrd',
-        # Checksum to ensure file integrity. Can be computed by this command:
-        #  import hashlib; print(hashlib.sha256(open(filename, "rb").read()).hexdigest())
-        checksums='SHA256:998cb522173839c78657f4bc0ea907cea09fd04e44601f17c82ea27927937b95',
-        # This node name will be used when the data set is loaded
-        nodeNames='CreateHeadTetrahedralGrid1'
-    )
-
-    # CreateHeadTetrahedralGrid2
-    SampleData.SampleDataLogic.registerCustomSampleDataSource(
-        # Category and sample name displayed in Sample Data module
-        category='CreateHeadTetrahedralGrid',
-        sampleName='CreateHeadTetrahedralGrid2',
-        thumbnailFileName=os.path.join(iconsPath, 'CreateHeadTetrahedralGrid2.png'),
-        # Download URL and target file name
-        uris="https://github.com/Slicer/SlicerTestingData/releases/download/SHA256/1a64f3f422eb3d1c9b093d1a18da354b13bcf307907c66317e2463ee530b7a97",
-        fileNames='CreateHeadTetrahedralGrid2.nrrd',
-        checksums='SHA256:1a64f3f422eb3d1c9b093d1a18da354b13bcf307907c66317e2463ee530b7a97',
-        # This node name will be used when the data set is loaded
-        nodeNames='CreateHeadTetrahedralGrid2'
-    )
+    # TODO: Add sample data...
 
 
 #
@@ -137,10 +104,7 @@ class CreateHeadTetrahedralGridWidget(ScriptedLoadableModuleWidget, VTKObservati
         # These connections ensure that whenever user changes some settings on the GUI, that is saved in the MRML scene
         # (in the selected parameter node).
         self.ui.inputSelector.connect("currentNodeChanged(vtkMRMLNode*)", self.updateParameterNodeFromGUI)
-        self.ui.outputSelector.connect("currentNodeChanged(vtkMRMLNode*)", self.updateParameterNodeFromGUI)
-        self.ui.imageThresholdSliderWidget.connect("valueChanged(double)", self.updateParameterNodeFromGUI)
-        self.ui.invertOutputCheckBox.connect("toggled(bool)", self.updateParameterNodeFromGUI)
-        self.ui.invertedOutputSelector.connect("currentNodeChanged(vtkMRMLNode*)", self.updateParameterNodeFromGUI)
+        self.ui.outputSelector.connect("currentPathChanged(QString)", self.updateParameterNodeFromGUI)
 
         # Buttons
         self.ui.applyButton.connect('clicked(bool)', self.onApplyButton)
@@ -233,17 +197,18 @@ class CreateHeadTetrahedralGridWidget(ScriptedLoadableModuleWidget, VTKObservati
 
         # Update node selectors and sliders
         self.ui.inputSelector.setCurrentNode(self._parameterNode.GetNodeReference("InputVolume"))
-        self.ui.outputSelector.setCurrentNode(self._parameterNode.GetNodeReference("OutputVolume"))
-        self.ui.invertedOutputSelector.setCurrentNode(self._parameterNode.GetNodeReference("OutputVolumeInverse"))
-        self.ui.imageThresholdSliderWidget.value = float(self._parameterNode.GetParameter("Threshold"))
-        self.ui.invertOutputCheckBox.checked = (self._parameterNode.GetParameter("Invert") == "true")
+        self.ui.outputSelector.setCurrentPath(self._parameterNode.GetParameter("OutputVolume"))
 
         # Update buttons states and tooltips
-        if self._parameterNode.GetNodeReference("InputVolume") and self._parameterNode.GetNodeReference("OutputVolume"):
-            self.ui.applyButton.toolTip = "Compute output volume"
+        # FIXME: Why can't we set empty path here? Maybe this is the cause:
+        # https://github.com/commontk/CTK/blob/2acba97da908cb94255b079a73fea28294637167/Libs/Widgets/ctkPathLineEdit.cpp#L678-L681
+        # print(len(self._parameterNode.GetParameter("OutputVolume")))
+        # FIXME: This below should be >0 not >1 (see comment above)
+        if self._parameterNode.GetNodeReference("InputVolume") and len(self.ui.outputSelector.currentPath) > 1: # and self._parameterNode.GetNodeReference("OutputVolume"):
+            self.ui.applyButton.toolTip = "Create grid."
             self.ui.applyButton.enabled = True
         else:
-            self.ui.applyButton.toolTip = "Select input and output volume nodes"
+            self.ui.applyButton.toolTip = "Select input surface model and output grid file name."
             self.ui.applyButton.enabled = False
 
         # All the GUI updates are done
@@ -261,10 +226,7 @@ class CreateHeadTetrahedralGridWidget(ScriptedLoadableModuleWidget, VTKObservati
         wasModified = self._parameterNode.StartModify()  # Modify all properties in a single batch
 
         self._parameterNode.SetNodeReferenceID("InputVolume", self.ui.inputSelector.currentNodeID)
-        self._parameterNode.SetNodeReferenceID("OutputVolume", self.ui.outputSelector.currentNodeID)
-        self._parameterNode.SetParameter("Threshold", str(self.ui.imageThresholdSliderWidget.value))
-        self._parameterNode.SetParameter("Invert", "true" if self.ui.invertOutputCheckBox.checked else "false")
-        self._parameterNode.SetNodeReferenceID("OutputVolumeInverse", self.ui.invertedOutputSelector.currentNodeID)
+        self._parameterNode.SetParameter("OutputVolume", self.ui.outputSelector.currentPath)
 
         self._parameterNode.EndModify(wasModified)
 
@@ -275,14 +237,8 @@ class CreateHeadTetrahedralGridWidget(ScriptedLoadableModuleWidget, VTKObservati
         with slicer.util.tryWithErrorDisplay("Failed to compute results.", waitCursor=True):
 
             # Compute output
-            self.logic.process(self.ui.inputSelector.currentNode(), self.ui.outputSelector.currentNode(),
-                               self.ui.imageThresholdSliderWidget.value, self.ui.invertOutputCheckBox.checked)
-
-            # Compute inverted output (if needed)
-            if self.ui.invertedOutputSelector.currentNode():
-                # If additional output volume is selected then result with inverted threshold is written there
-                self.logic.process(self.ui.inputSelector.currentNode(), self.ui.invertedOutputSelector.currentNode(),
-                                   self.ui.imageThresholdSliderWidget.value, not self.ui.invertOutputCheckBox.checked, showResult=False)
+            self.logic.process(self.ui.inputSelector.currentNode().GetStorageNode().GetFullNameFromFileName(),
+                               self.ui.outputSelector.currentPath)
 
 
 #
@@ -309,21 +265,20 @@ class CreateHeadTetrahedralGridLogic(ScriptedLoadableModuleLogic):
         """
         Initialize parameter node with default settings.
         """
-        if not parameterNode.GetParameter("Threshold"):
-            parameterNode.SetParameter("Threshold", "100.0")
-        if not parameterNode.GetParameter("Invert"):
-            parameterNode.SetParameter("Invert", "false")
+        pass
 
-    def process(self, inputVolume, outputVolume, imageThreshold, invert=False, showResult=True):
+    def process(self, inputVolume, outputVolume):
         """
         Run the processing algorithm.
         Can be used without GUI widget.
-        :param inputVolume: volume to be thresholded
-        :param outputVolume: thresholding result
-        :param imageThreshold: values above/below this threshold will be set to 0
-        :param invert: if True then values above the threshold will be set to 0, otherwise values below are set to 0
-        :param showResult: show output volume in slice viewers
+        :param inputVolume: Brain surface
+        :param outputModel:  Brain model
         """
+
+
+
+
+        print(outputVolume)
 
         if not inputVolume or not outputVolume:
             raise ValueError("Input or output volume is invalid")
@@ -332,16 +287,74 @@ class CreateHeadTetrahedralGridLogic(ScriptedLoadableModuleLogic):
         startTime = time.time()
         logging.info('Processing started')
 
-        # Compute the thresholded output volume using the "Threshold Scalar Volume" CLI module
-        cliParams = {
-            'InputVolume': inputVolume.GetID(),
-            'OutputVolume': outputVolume.GetID(),
-            'ThresholdValue': imageThreshold,
-            'ThresholdType': 'Above' if invert else 'Below'
-        }
-        cliNode = slicer.cli.run(slicer.modules.thresholdscalarvolume, None, cliParams, wait_for_completion=True, update_display=showResult)
-        # We don't need the CLI module node anymore, remove it to not clutter the scene with it
-        slicer.mrmlScene.RemoveNode(cliNode)
+        import gmsh
+        import numpy as np
+
+        gmsh.initialize()
+
+        gmsh.merge(inputVolume)
+
+        gmsh.model.geo.addSurfaceLoop([1])
+        gmsh.model.geo.addVolume([1])
+
+        gmsh.model.geo.synchronize()
+
+        gmsh.model.mesh.generate(3)
+
+        nodes = gmsh.model.mesh.get_nodes()
+        node_ids = nodes[0]
+        coords = nodes[1].reshape((-1, 3))
+
+        tri_elems = gmsh.model.mesh.get_elements_by_type(2)
+        tet_elems = gmsh.model.mesh.get_elements_by_type(4)
+
+        tri_ids = tri_elems[0]
+        tet_ids = tet_elems[0] - len(tri_ids)
+        tri_conn = tri_elems[1].reshape((-1,3))
+        tet_conn = tet_elems[1].reshape((-1,4))
+
+        contact_node_ids = np.unique(tri_elems[1])
+
+        skull_node_ids = contact_node_ids + len(node_ids)
+        skull_node_coords = coords[contact_node_ids - 1]
+        skull_elem_ids = tri_ids + len(tet_ids)
+        skull_conn = tri_conn + len(node_ids)
+
+        # Reverse normals of skull surface
+        skull_conn[:, [0, 1, 2]] = skull_conn[:, [0, 2, 1]]
+
+        # Write tetrahedral brain mesh with skull surface in Abaqus .inp format
+        with open(outputVolume, 'w') as f:
+            # node ids and coordinates
+            f.write("*NODE\n")
+            # brain tet nodes
+            for i, node_id in enumerate(node_ids):
+                f.write(f"{node_id}, {coords[i,0]}, {coords[i,1]}, {coords[i,2]}\n")
+            # skull tri nodes
+            for i, node_id in enumerate(skull_node_ids):
+                f.write(f"{node_id}, {skull_node_coords[i,0]}, {skull_node_coords[i,1]}, {skull_node_coords[i,2]}\n")
+
+            # brain tetrahedral elements
+            f.write("*ELEMENT, TYPE=C3D4, ELSET=brain\n")
+            for i, elem_id in enumerate(tet_ids):
+                f.write(f"{elem_id}, {tet_conn[i,0]}, {tet_conn[i,1]}, {tet_conn[i,2]}, {tet_conn[i,3]}\n")
+
+            # skull triangle elements
+            f.write("*ELEMENT, TYPE=S3, ELSET=skull\n")
+            for i, elem_id in enumerate(skull_elem_ids):
+                f.write(f"{elem_id}, {skull_conn[i,0]}, {skull_conn[i,1]}, {skull_conn[i,2]}\n")
+
+            # brain surface nodes (in contact with skull)
+            f.write("*NSET, NSET=contact\n")
+            for i, node_id in enumerate(contact_node_ids):
+                f.write(str(node_id))
+                f.write(",")
+                if (i+1) % 8 == 0:
+                    f.write("\n")
+                else:
+                    f.write(" ")
+
+        gmsh.finalize()
 
         stopTime = time.time()
         logging.info(f'Processing completed in {stopTime-startTime:.2f} seconds')
@@ -395,22 +408,11 @@ class CreateHeadTetrahedralGridTest(ScriptedLoadableModuleTest):
         self.assertEqual(inputScalarRange[1], 695)
 
         outputVolume = slicer.mrmlScene.AddNewNodeByClass("vtkMRMLScalarVolumeNode")
-        threshold = 100
 
         # Test the module logic
 
         logic = CreateHeadTetrahedralGridLogic()
 
-        # Test algorithm with non-inverted threshold
-        logic.process(inputVolume, outputVolume, threshold, True)
-        outputScalarRange = outputVolume.GetImageData().GetScalarRange()
-        self.assertEqual(outputScalarRange[0], inputScalarRange[0])
-        self.assertEqual(outputScalarRange[1], threshold)
-
-        # Test algorithm with inverted threshold
-        logic.process(inputVolume, outputVolume, threshold, False)
-        outputScalarRange = outputVolume.GetImageData().GetScalarRange()
-        self.assertEqual(outputScalarRange[0], inputScalarRange[0])
-        self.assertEqual(outputScalarRange[1], inputScalarRange[1])
+        # TODO: Write tests...
 
         self.delayDisplay('Test passed')
