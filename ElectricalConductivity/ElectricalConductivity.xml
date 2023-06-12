@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <executable>
-  <category>CBM.Property</category>
+  <category>CBM.Physics.Electromagnetics.Property</category>
   <title>Electrical Conductivity</title>
   <description><![CDATA[Assign electrical conductivity to voxels of an image.]]></description>
   <version>0.1.0.</version>

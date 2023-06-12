@@ -17,8 +17,8 @@ class FiducialsToSurface(ScriptedLoadableModule):
 
   def __init__(self, parent):
     ScriptedLoadableModule.__init__(self, parent)
-    self.parent.title = "FiducialsToSurface" # TODO make this more human readable by adding spaces
-    self.parent.categories = ["CBM.Biomechanical.Electrodes"]
+    self.parent.title = "Fiducials To Surface"
+    self.parent.categories = ["CBM.Surface Models"]
     self.parent.dependencies = []
     self.parent.contributors = ["Saima Safdar"] # replace with "Firstname Lastname (Organization)"
     self.parent.helpText = """
@@ -69,7 +69,7 @@ class FiducialsToSurfaceWidget(ScriptedLoadableModuleWidget):
   def onApplyButton(self):
     try:
        import pyacvd
-       import pyvista as pv 
+       import pyvista as pv
     except ModuleNotFoundError as e:
         if slicer.util.confirmOkCancelDisplay("This module requires 'pyacvd, pyvista' Python package. Click OK to install."):
             slicer.util.pip_install("pyacvd")
@@ -77,8 +77,8 @@ class FiducialsToSurfaceWidget(ScriptedLoadableModuleWidget):
             #import tensorflow
             import pyacvd
             import pyvista as pv
-           
-            
+
+
     logic = FiducialsToSurfaceLogic()
     enableScreenshotsFlag = self.ui.enableScreenshotsFlagCheckBox.checked
     try:
@@ -145,7 +145,7 @@ class FiducialsToSurfaceLogic(ScriptedLoadableModuleLogic):
     markupsIndex = 0
     n = markupsNode.GetNumberOfFiducials()
     modelNode = slicer.util.getNode(outputModel.GetID())
-    
+
     ar = []
     print(n)
     for j in range(n):
@@ -153,20 +153,20 @@ class FiducialsToSurfaceLogic(ScriptedLoadableModuleLogic):
         markupsNode.GetNthFiducialWorldCoordinates(markupsIndex, point_Ras)
         ar.append(point_Ras[0:3])
         markupsIndex = markupsIndex+1
-        
+
     ar2 = np.array(ar)
     print(ar2)
-    print(ar2.shape)   
-        
-    cloud = pv.PolyData(ar2)     
+    print(ar2.shape)
+
+    cloud = pv.PolyData(ar2)
     surf = cloud.delaunay_2d(alpha = 0.0, offset=-5.0)
-    newMesh1 = surf.compute_normals()    
+    newMesh1 = surf.compute_normals()
     cpos = newMesh1.plot()
-    
-    
+
+
     outputModel.SetAndObservePolyData(newMesh1)
-    
-    
+
+
     # Capture screenshot
     if enableScreenshots:
       self.takeScreenshot('FiducialsToSurfaceTest-Start','MyScreenshot',-1)

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <executable>
-  <category>CBM.Geometry</category>
+  <category>CBM.Surface Models</category>
   <title>Sheet From Points</title>
   <description><![CDATA[Create a sheet model from a set of fiducial points]]></description>
   <version>0.1.0.</version>

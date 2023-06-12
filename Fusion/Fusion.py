@@ -16,8 +16,8 @@ class Fusion(ScriptedLoadableModule):
 
   def __init__(self, parent):
     ScriptedLoadableModule.__init__(self, parent)
-    self.parent.title = "Fusion"  # TODO: make this more human readable by adding spaces
-    self.parent.categories = ["CBM.Bioelectric.HeadModel"]  # TODO: set categories (folders where the module shows up in the module selector)
+    self.parent.title = "Fusion (Create skull and scalp segments)"
+    self.parent.categories = ["CBM.Physics.Electromagnetics.Property"]
     self.parent.dependencies = []  # TODO: add here list of module names that this module requires
     self.parent.contributors = ["Saima Safdar"]  # TODO: replace with "Firstname Lastname (Organization)"
     self.parent.helpText = """
@@ -120,10 +120,10 @@ class FusionWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     wasBlocked = self.ui.outputSelector.blockSignals(True)
     self.ui.outputSelector.setCurrentNode(self._parameterNode.GetNodeReference("OutputVolume"))
     self.ui.outputSelector.blockSignals(wasBlocked)
-    
-    
 
-    
+
+
+
     # Update buttons states and tooltips
     if self._parameterNode.GetNodeReference("OutputVolume"):
       self.ui.applyButton.toolTip = "Compute output volume"
@@ -143,7 +143,7 @@ class FusionWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
 
     #self._parameterNode.SetNodeReferenceID("InputVolume", self.ui.inputSelector.currentNodeID)
     self._parameterNode.SetNodeReferenceID("OutputVolume", self.ui.outputSelector.currentNodeID)
-    
+
 
   def onApplyButton(self):
     """
@@ -196,7 +196,7 @@ class FusionLogic(ScriptedLoadableModuleLogic):
       'ThresholdType' : 'Below' if invert else 'Above'
       }
     cliNode = slicer.cli.run(slicer.modules.thresholdscalarvolume, None, cliParams, wait_for_completion=True)"""
-    
+
     #outputVolume1 = slicer.mrmlScene.AddNewNodeByClass("vtkMRMLLabelMapVolumeNode")
     #slicer.vtkSlicerVolumesLogic().CreateLabelVolumeFromVolume(slicer.mrmlScene, outputVolume1, outputVolume)
     # Create segmentation
@@ -207,7 +207,7 @@ class FusionLogic(ScriptedLoadableModuleLogic):
     segmentationNode.SetReferenceImageGeometryParameterFromVolumeNode(outputVolume)
     brainID = segmentationNode.GetSegmentation().AddEmptySegment("brain")
     #outputVolume1.SetName("brain")
-    
+
     #segmentationNode.SetReferenceImageGeometryParameterFromVolumeNode(inputVolume)
     # Create segment editor to get access to effects
     segmentEditorWidget = slicer.qMRMLSegmentEditorWidget()
@@ -220,49 +220,49 @@ class FusionLogic(ScriptedLoadableModuleLogic):
     segmentEditorWidget.setMRMLSegmentEditorNode(segmentEditorNode)
     segmentEditorWidget.setSegmentationNode(segmentationNode)
     segmentEditorWidget.setMasterVolumeNode(outputVolume)
-    
-    
-   
-    
-    
-    #import volume to labelmap     
-    #slicer.modules.segmentations.logic().ImportLabelmapToSegmentationNode(outputVolume1, segmentationNode) 
+
+
+
+
+
+    #import volume to labelmap
+    #slicer.modules.segmentations.logic().ImportLabelmapToSegmentationNode(outputVolume1, segmentationNode)
     #segmentationNode.CreateClosedSurfaceRepresentation()
     #segmentEditorWidget.setCurrentSegmentID(segmentationNode.GetSegmentation().GetNthSegmentID(0))
-    
-    
-    
+
+
+
     #threshold
     segmentEditorWidget.setActiveEffectByName("Threshold")
     effect = segmentEditorWidget.activeEffect()
     effect.setParameter("MinimumThreshold","2")
     effect.setParameter("MaximumThreshold","255")
     effect.self().onApply()
-    
+
     #masking to allow overlap modify all segments
     #segmentEditorNode.SetMaskSegmentID(
     segmentEditorNode.SetOverwriteMode(slicer.vtkMRMLSegmentEditorNode.OverwriteNone)
     #segmentEditorNode.SetMaskMode(slicer.vtkMRMLSegmentEditorNode.OverwriteNone)
-    
-    
+
+
     #add another segment skull
     skullID = segmentationNode.GetSegmentation().AddEmptySegment("Skull")
-    
-    
-    
-    
+
+
+
+
     #copy brain into this new segment
     segmentEditorWidget.setActiveEffectByName("Logical operators")
     effect = segmentEditorWidget.activeEffect()
     effect.setParameter("Operation", "COPY")
-    
-    #effect.setParameter("SelectedSegmentID", skull) 
-    effect.setParameter("ModifierSegmentID", brainID) 
+
+    #effect.setParameter("SelectedSegmentID", skull)
+    effect.setParameter("ModifierSegmentID", brainID)
     segmentEditorWidget.setCurrentSegmentID(skullID)
     effect.self().onApply()
-   
+
     #grow the skull
-    
+
     segmentEditorWidget.setActiveEffectByName("Margin")
     effect = segmentEditorWidget.activeEffect()
     segmentEditorWidget.setSegmentationNode(segmentationNode)
@@ -271,26 +271,26 @@ class FusionLogic(ScriptedLoadableModuleLogic):
     effect = segmentEditorWidget.activeEffect()
     effect.setParameter("MarginSizeMm",str(skullGrow))
     effect.self().onApply()
-    
-   
-    
+
+
+
     segmentEditorWidget.setActiveEffectByName("Logical operators")
     effect = segmentEditorWidget.activeEffect()
     effect.setParameter("Operation", "SUBTRACT")
-    effect.setParameter("ModifierSegmentID",brainID) 
+    effect.setParameter("ModifierSegmentID",brainID)
     segmentEditorWidget.setCurrentSegmentID(skullID)
     effect.self().onApply()
     #create new segment scalp and subtract skull and brain1
     scalpID = segmentationNode.GetSegmentation().AddEmptySegment("Scalp")
-     
+
     #copy brain into this new segment
     segmentEditorWidget.setActiveEffectByName("Logical operators")
     effect = segmentEditorWidget.activeEffect()
     effect.setParameter("Operation", "COPY")
-    effect.setParameter("ModifierSegmentID", skullID) 
+    effect.setParameter("ModifierSegmentID", skullID)
     segmentEditorWidget.setCurrentSegmentID(scalpID)
     effect.self().onApply()
-    
+
     #grow scalp
     segmentEditorWidget.setActiveEffectByName("Margin")
     effect = segmentEditorWidget.activeEffect()
@@ -300,42 +300,42 @@ class FusionLogic(ScriptedLoadableModuleLogic):
     effect = segmentEditorWidget.activeEffect()
     effect.setParameter("MarginSizeMm",str(scalpGrow))
     effect.self().onApply()
-    
+
     #subtract both brain and skull from scalp
-   
-    
+
+
     segmentEditorWidget.setActiveEffectByName("Logical operators")
     effect = segmentEditorWidget.activeEffect()
     effect.setParameter("Operation", "SUBTRACT")
-    effect.setParameter("ModifierSegmentID",brainID) 
+    effect.setParameter("ModifierSegmentID",brainID)
     segmentEditorWidget.setCurrentSegmentID(scalpID)
     effect.self().onApply()
-    
+
     segmentEditorWidget.setActiveEffectByName("Logical operators")
     effect = segmentEditorWidget.activeEffect()
     effect.setParameter("Operation", "SUBTRACT")
-    effect.setParameter("ModifierSegmentID",skullID) 
+    effect.setParameter("ModifierSegmentID",skullID)
     segmentEditorWidget.setCurrentSegmentID(scalpID)
     effect.self().onApply()
-    
+
     displayNode = segmentationNode.GetDisplayNode()
-    #displayNode.SetSegmentVisibility(skullID, False) 
+    #displayNode.SetSegmentVisibility(skullID, False)
     #displayNode.SetSegmentVisibility(brainID, False)
-    
+
     #add label maps
     #skull = slicer.mrmlScene.AddNewNodeByClass("vtkMRMLLabelMapVolumeNode")
     wholeBrain = slicer.mrmlScene.AddNewNodeByClass("vtkMRMLLabelMapVolumeNode")
-    
+
     slicer.modules.segmentations.logic().ExportVisibleSegmentsToLabelmapNode(segmentationNode, wholeBrain, outputVolume)
     #displayNode.SetSegmentVisibility(skullID, True)
     #displayNode.SetSegmentVisibility(scalpID, False)
     #slicer.modules.segmentations.logic().ExportVisibleSegmentsToLabelmapNode(segmentationNode, skull, outputVolume)
-    
-    
+
+
     slicer.mrmlScene.RemoveNode(segmentEditorNode)
     """
 
-    
+
     segmentation.AddEmptySegment("Scalp")
     #copy brain into this new segment
     segmentEditorWidget.setActiveEffectByName("Logical operators")
@@ -343,13 +343,13 @@ class FusionLogic(ScriptedLoadableModuleLogic):
     effect.setParameter("Operation", "UNION")
     skull = segmentation.GetSegmentIdBySegmentName("skull")
     scalp = segmentation.GetSegmentIdBySegmentName("scalp")
-    effect.setParameter("ModifierSegmentID", skull) 
-    effect.setParameter("SelectedSegmentID", scalp) 
+    effect.setParameter("ModifierSegmentID", skull)
+    effect.setParameter("SelectedSegmentID", scalp)
     #segmentEditorWidget.setCurrentSegmentID(scalp)
     effect.self().onApply()
-    
+
     #grow the scalp
-    
+
     segmentEditorWidget.setActiveEffectByName("Margin")
     effect = segmentEditorWidget.activeEffect()
     segmentEditorWidget.setSegmentationNode(segmentationNode)
@@ -358,40 +358,40 @@ class FusionLogic(ScriptedLoadableModuleLogic):
     effect = segmentEditorWidget.activeEffect()
     effect.setParameter("MarginSizeMm","4")
     effect.self().onApply()
-    
+
      #subtract skull from scalp
     segmentEditorWidget.setActiveEffectByName("Logical operators")
     effect = segmentEditorWidget.activeEffect()
     effect.setParameter("Operation", "SUBTRACT")
     skull = segmentation.GetSegmentIdBySegmentName("skull")
     scalp = segmentation.GetSegmentIdBySegmentName("scalp")
-    effect.setParameter("ModifierSegmentID", skull) 
-    effect.setParameter("SelectedSegmentID", scalp) 
+    effect.setParameter("ModifierSegmentID", skull)
+    effect.setParameter("SelectedSegmentID", scalp)
     #segmentEditorWidget.setCurrentSegmentID(scalp)
     effect.self().onApply()
-       
-        
+
+
          segmentEditorWidget.setActiveEffectByName("Logical operators")
     effect = segmentEditorWidget.activeEffect()
      operationName = "Subtract"
      effect.setParameter("Operation", "SUBTRACT")
     brain = segmentationNode.GetSegmentIdBySegmentName("brain")
-    
-    
+
+
      brain = segmentation.GetSegmentIdBySegmentName("brain")
     >>> brain
     'mask_1'
     >>> skull = segmentation.GetSegmentIdBySegmentName("skull")
     >>> skull
     'mask'
-    >>> effect.setParameter("ModifierSegmentID", brain) 
+    >>> effect.setParameter("ModifierSegmentID", brain)
     >>> segmentEditorWidget.setCurrentSegmentID(skull)
     >>> effect.self().onApply()
-    >>> 
-    
+    >>>
+
     #export Segmentation to labelmapNode
     slicer.modules.segmentations.logic().ExportVisibleSegmentsToLabelmapNode(segmentationNode, labelmapVolumeNode, masterVolumeNode)
-    
+
     #segment visible
     segmentationNode = slicer.util.getNode('Segmentation')
     displayNode = segmentationNode.GetDisplayNode()
@@ -400,7 +400,7 @@ class FusionLogic(ScriptedLoadableModuleLogic):
     #getsegment by id
     segmentation = segmentationNode.GetSegmentation()
     leftCerebralCortexSegmentID = segmentation.GetSegmentIdBySegmentName("Left-Cerebral-Cortex")"""
-    
+
     logging.info('Processing completed')
 
 #

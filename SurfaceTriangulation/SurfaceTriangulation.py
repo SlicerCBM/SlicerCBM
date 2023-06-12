@@ -16,8 +16,8 @@ class SurfaceTriangulation(ScriptedLoadableModule):
 
   def __init__(self, parent):
     ScriptedLoadableModule.__init__(self, parent)
-    self.parent.title = "SurfaceTriangulation"  # TODO: make this more human readable by adding spaces
-    self.parent.categories = ["CBM.Biomechanical"]  # TODO: set categories (folders where the module shows up in the module selector)
+    self.parent.title = "Surface Triangulation"
+    self.parent.categories = ["CBM.Surface Models"]
     self.parent.dependencies = []  # TODO: add here list of module names that this module requires
     self.parent.contributors = ["Saima Safdar"]  # TODO: replace with "Firstname Lastname (Organization)"
     self.parent.helpText = """
@@ -41,7 +41,7 @@ class SurfaceTriangulationWidget(ScriptedLoadableModuleWidget, VTKObservationMix
     VTKObservationMixin.__init__(self)  # needed for parameter node observation
     try:
        import pyacvd
-       import pyvista as pv 
+       import pyvista as pv
     except ModuleNotFoundError as e:
         if slicer.util.confirmOkCancelDisplay("This module requires 'gmsh, meshio' Python package. Click OK to install (it takes several minutes)."):
             slicer.util.pip_install("pyacvd")
@@ -52,7 +52,7 @@ class SurfaceTriangulationWidget(ScriptedLoadableModuleWidget, VTKObservationMix
             #import tensorflow
             import pyacvd
             import pyvista as pv
-            import meshio 
+            import meshio
     self.logic = None
     self._parameterNode = None
 
@@ -212,43 +212,43 @@ class SurfaceTriangulationLogic(ScriptedLoadableModuleLogic):
 
     logging.info('Processing started')
     import pyacvd
-    import pyvista as pv 
+    import pyvista as pv
     print(clusterNum)
     v2n = vtk.util.numpy_support.vtk_to_numpy
     # Compute the thresholded output volume using the Threshold Scalar Volume CLI module
     n = slicer.util.getNode(inputModel.GetID())
-    
+
     mesh = n.GetMesh()
     print(mesh)
-    
+
     points = v2n(mesh.GetPoints().GetData())
     cells = v2n(mesh.GetPolys().GetData())
-    
+
     print(points)
     print(cells)
     pd = pv.PolyData(points,cells)
-    
+
     pd.plot()
-    
+
     clus = pyacvd.Clustering(pd)
-    
+
     print("do cluster")
     #clus.subdivide(3)
-    
-    
-    
-    
+
+
+
+
     clus.cluster(clusterNum)
-    
+
     nmesh = clus.create_mesh()
-    
+
     nmesh.plot()
-    
+
     polydata = vtk.vtkPolyData()
     polydata.SetPoints(nmesh.GetPoints())
     polydata.SetPolys(nmesh.GetPolys())
-    
-    
+
+
     #model = outputModel.GetID()
     #model = slicer.mrmlScene.AddNewNodeByClass("vtkMRMLModelNode")
     outputModel.SetAndObservePolyData(polydata)

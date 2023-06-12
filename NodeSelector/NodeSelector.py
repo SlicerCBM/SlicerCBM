@@ -16,8 +16,8 @@ class NodeSelector(ScriptedLoadableModule):
 
   def __init__(self, parent):
     ScriptedLoadableModule.__init__(self, parent)
-    self.parent.title = "NodeSelector"  # TODO: make this more human readable by adding spaces
-    self.parent.categories = ["CBM.Biomechanical.BrainNodeSelector"]  # TODO: set categories (folders where the module shows up in the module selector)
+    self.parent.title = "Node Selector"
+    self.parent.categories = ["CBM.Biomechanical"]
     self.parent.dependencies = []  # TODO: add here list of module names that this module requires
     self.parent.contributors = ["Saima Safdar"]  # TODO: replace with "Firstname Lastname (Organization)"
     self.parent.helpText = """
@@ -68,7 +68,7 @@ class NodeSelectorWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
 
     self.ui.inputSelector.connect("currentNodeChanged(vtkMRMLNode*)", self.updateParameterNodeFromGUI)
     self.ui.outputSelector.connect("currentNodeChanged(vtkMRMLNode*)", self.updateParameterNodeFromGUI)
-    
+
 
     self.ui.applyButton.connect('clicked(bool)', self.onApplyButton)
 
@@ -123,9 +123,9 @@ class NodeSelectorWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     self.ui.outputSelector.setCurrentNode(self._parameterNode.GetNodeReference("OutputVolume"))
     self.ui.outputSelector.blockSignals(wasBlocked)
 
-    
 
-    
+
+
 
     # Update buttons states and tooltips
     if self._parameterNode.GetNodeReference("InputVolume") and self._parameterNode.GetNodeReference("OutputVolume"):
@@ -146,7 +146,7 @@ class NodeSelectorWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
 
     self._parameterNode.SetNodeReferenceID("InputVolume", self.ui.inputSelector.currentNodeID)
     self._parameterNode.SetNodeReferenceID("OutputVolume", self.ui.outputSelector.currentNodeID)
-    
+
 
 
   def onApplyButton(self):
@@ -198,7 +198,7 @@ class NodeSelectorLogic(ScriptedLoadableModuleLogic):
         cell.FindClosestPoint(markupPoint, closestPoint, cellObj, cellId, subId, dist2)
         closestCell = cellId.get()
         arr=np.append(arr,closestCell)
-        
+
         print("markup point",markupPoint)
         print("closest Cell",closestCell)
         if closestCell >=0:
@@ -219,8 +219,8 @@ class NodeSelectorLogic(ScriptedLoadableModuleLogic):
     print(len(electrodePosArray1))
     print(arr)
     #cells to nodel selection on brain surface
-    
-    return electrodePosArray1    
+
+    return electrodePosArray1
 
   def run(self, inputVolume, outputVolume, disFile, skullEleFile):
     """
@@ -244,17 +244,17 @@ class NodeSelectorLogic(ScriptedLoadableModuleLogic):
     nPoints = points.GetNumberOfPoints()
     for i in range(nPoints):
         p = points.GetPoint(i)
-       
+
         #
         markupsNode.AddFiducial(p[0],p[1],p[2])
-    
+
 
     d = markupsNode.GetDisplayNode()
     d.PointLabelsVisibilityOff()
-    
+
     #getting thre seconf mesh model and highlight the cells on the model using the created fiducials
     modelNode2 = slicer.util.getNode(outputVolume.GetID()) # select cells in this model
-    
+
     cellScalars = modelNode2.GetMesh().GetCellData()
     selectionArray = cellScalars.GetArray('selection')
     if not selectionArray:
@@ -263,20 +263,20 @@ class NodeSelectorLogic(ScriptedLoadableModuleLogic):
       selectionArray.SetNumberOfValues(modelNode2.GetMesh().GetNumberOfCells())
       selectionArray.Fill(0)
       cellScalars.AddArray(selectionArray)
-      
+
     modelNode2.GetDisplayNode().SetActiveScalar("selection", vtk.vtkAssignAttribute.CELL_DATA)
     modelNode2.GetDisplayNode().SetAndObserveColorNodeID("vtkMRMLColorTableNodeWarm1")
     modelNode2.GetDisplayNode().SetScalarVisibility(True)
-    
+
     cell = vtk.vtkCellLocator()
     cell.SetDataSet(modelNode2.GetMesh())
     cell.BuildLocator()
-   
-    arr = self.onPointsModified(selectionArray, markupsNode, cell) 
+
+    arr = self.onPointsModified(selectionArray, markupsNode, cell)
     #get the brain volume so the reference displaced node ids can be collected
     #brainVol = slicer.util.getNode(brainVolume.GetID()) # select cells in this model
     #brainMesh = brainVol.GetMesh()
-    
+
     disNodes = []
     markupsNode2 = slicer.mrmlScene.AddNewNodeByClass("vtkMRMLMarkupsFiducialNode")
     markupsNode2.CreateDefaultDisplayNodes()
@@ -293,7 +293,7 @@ class NodeSelectorLogic(ScriptedLoadableModuleLogic):
         p1 = pointIds.GetId(0)
         p2 = pointIds.GetId(1)
         p3 = pointIds.GetId(2)
-        
+
         print(p1, p2, p3)
         #disNodes.append(p1+1)
         #disNodes.append(p2+1)
@@ -328,25 +328,25 @@ class NodeSelectorLogic(ScriptedLoadableModuleLogic):
         markupsNode2.AddFiducial(a1[0],a1[1],a1[2],str(p1+1))
         markupsNode2.AddFiducial(a2[0],a2[1],a2[2],str(p2+1))
         markupsNode2.AddFiducial(a3[0],a3[1],a3[2],str(p3+1))
-        
+
         #get the projected electrode locations
-        
-    
+
+
     nodeCoordinates.close()
     d = markupsNode2.GetDisplayNode()
     #d.PointLabelsVisibilityOff()
     #save the displaced nodes in the file
     arrNumpy = np.array(disNodes)
     np.savetxt(disFile,arrNumpy, fmt="%s", delimiter=",")
-    
+
     #saving skull cell numbers in the file
     if skullEleFile:
         print(arr)
         arr = [i+1 for i in arr]
         print(arr)
         np.savetxt(skullEleFile,arr, fmt="%s", delimiter=",")
-    
-    
+
+
     logging.info('Processing completed')
 #
 # NodeSelectorTest

@@ -16,8 +16,8 @@ class BrainSurfaceNeighbouringCellsSelection(ScriptedLoadableModule):
 
   def __init__(self, parent):
     ScriptedLoadableModule.__init__(self, parent)
-    self.parent.title = "BrainSurfaceNeighbouringCellsSelection"  # TODO: make this more human readable by adding spaces
-    self.parent.categories = ["CBM.BrainNeighbourNodeSelector"]  # TODO: set categories (folders where the module shows up in the module selector)
+    self.parent.title = "Brain Surface Neighbouring Cells Selection"
+    self.parent.categories = ["CBM.Biomechanical"]
     self.parent.dependencies = []  # TODO: add here list of module names that this module requires
     self.parent.contributors = ["Saima Safdar"]  # TODO: replace with "Firstname Lastname (Organization)"
     self.parent.helpText = """
@@ -150,13 +150,13 @@ class BrainSurfaceNeighbouringCellsSelectionWidget(ScriptedLoadableModuleWidget,
     else:
       self.ui.applyButton.toolTip = "Select input model node"
       self.ui.applyButton.enabled = False
-      
+
     if self._parameterNode.GetNodeReference("InputModel"):
       self.ui.createFiducialsButton.toolTip = "create fiducials"
       self.ui.createFiducialsButton.enabled = True
     else:
       self.ui.createFiducialsButton.toolTip = "Select input model"
-      self.ui.createFiducialsButton.enabled = False  
+      self.ui.createFiducialsButton.enabled = False
 
   def updateParameterNodeFromGUI(self, caller=None, event=None):
     """
@@ -184,8 +184,8 @@ class BrainSurfaceNeighbouringCellsSelectionWidget(ScriptedLoadableModuleWidget,
       slicer.util.errorDisplay("Failed to compute results: "+str(e))
       import traceback
       traceback.print_exc()
-    
-      
+
+
   def onApplyButton(self):
     """
     Run processing when user clicks "Apply" button.
@@ -217,7 +217,7 @@ class BrainSurfaceNeighbouringCellsSelectionLogic(ScriptedLoadableModuleLogic):
       parameterNode.SetParameter("Threshold", "50.0")
     if not parameterNode.GetParameter("Invert"):
       parameterNode.SetParameter("Invert", "false")
-  
+
   def createFiducials(self, inputmodel, cellFile, disFile):
     """
     Run the processing algorithm.
@@ -228,7 +228,7 @@ class BrainSurfaceNeighbouringCellsSelectionLogic(ScriptedLoadableModuleLogic):
       raise ValueError("Input model is invalid")
 
     logging.info('Processing started')
-    
+
     electrodePos1=[]
     f=open(cellFile,"r")
     for line in f:
@@ -257,13 +257,13 @@ class BrainSurfaceNeighbouringCellsSelectionLogic(ScriptedLoadableModuleLogic):
     import time
     start_time = time.time()
     dir_path = os.path.dirname(os.path.realpath(__file__))
-    file_path ="/home/saima/volumeMesh.vtk" 
-    slicer.util.saveNode(node, dir_path+"/volumeMesh.vtk")    
-    
+    file_path ="/home/saima/volumeMesh.vtk"
+    slicer.util.saveNode(node, dir_path+"/volumeMesh.vtk")
+
     import meshio
     mesh = meshio.read(dir_path+"/volumeMesh.vtk")
     meshio.write(dir_path+"/volumeMesh.inp", mesh)
-    
+
     #reading the inp file to extract nodes for the seleted cells
     f = open(dir_path+"/volumeMesh.inp","r")
     lines = f.readlines();
@@ -280,11 +280,11 @@ class BrainSurfaceNeighbouringCellsSelectionLogic(ScriptedLoadableModuleLogic):
         if("C3D4" in l):
             break;
         if copy:
-             #parse the next line 
+             #parse the next line
             #get the first number
             #match the number witht the array above
             #copy the line to a new file
-            #after all numbers lines saved 
+            #after all numbers lines saved
             #open file and read all the nmbers excet numbers in first line
             #print(l)
             b=l.split(',')
@@ -314,15 +314,15 @@ class BrainSurfaceNeighbouringCellsSelectionLogic(ScriptedLoadableModuleLogic):
     import numpy as np
     nodes_unique = np.unique(nodes)
     nodes_unique.sort()
-    print(nodes_unique) 
-    o = open(disFile,"w+") 
+    print(nodes_unique)
+    o = open(disFile,"w+")
     for i in range(len(nodes_unique)):
         o.write(str(nodes_unique[i]))
         o.write(",")
-        
+
     o.close()
     print(nodes_unique)
-    
+
 
     """f = open("/home/saima/surface_nodes.txt",'w+')
     i = 1
@@ -331,9 +331,9 @@ class BrainSurfaceNeighbouringCellsSelectionLogic(ScriptedLoadableModuleLogic):
          #print(i,end=',')
          f.write(str(i))
          f.write(",")
-        
+
     f.close()  """
-    
+
     #searching for nodes in the file for x y z
     #nodes_unique = [i - 1 for i in nodes_unique]
     #nodes_unique = [i for i in nodes_unique]
@@ -378,19 +378,19 @@ class BrainSurfaceNeighbouringCellsSelectionLogic(ScriptedLoadableModuleLogic):
                 markupsNode3.AddFiducial(-s2,-s3,s4,str(s1))
                 #markupsNode3.AddFiducial(-s2,-s3,s4,str(s1))
                 #fiducialArray.append(s1,s2,s3,s4)
-     
-    f.close()  
+
+    f.close()
     f_new.close()
     d = markupsNode3.GetDisplayNode()
-    d.PointLabelsVisibilityOff()  
-           
+    d.PointLabelsVisibilityOff()
+
     #for j in range(len(nodes_unique)):
     print("--- %s seconds ---" % (time.time() - start_time))
-    return True    
+    return True
 
 
 
-      
+
   def run(self, inputVolume, meshCellFile, allElectrodeCellsFile):
     """
     Run the processing algorithm.
@@ -417,16 +417,16 @@ class BrainSurfaceNeighbouringCellsSelectionLogic(ScriptedLoadableModuleLogic):
         for n in b:
             print(n)
             electrodePos1.append(n)
-    
+
     del electrodePos1[-1] #remove last element of array which is empty
     electrodePos = [int(n) for n in electrodePos1]
     print(electrodePos)
-    
+
     #electrodePos = [9338, 19575, 14647, 18007, 16394, 12795, 22412, 23777, 24113, 6229, 8064, 5777, 23120, 12895, 9652, 9437, 14295, 7741, 23801, 18897, 21348, 1510, 3389, 3390, 874, 21434, 18638, 4139, 15455, 22897, 3342, 3322, 23290, 10204, 7614, 4047, 6004, 19068, 23253, 15729, 5864, 4026, 4073, 9265, 19206, 20071, 4448, 23504, 24189, 14432, 9874, 18070, 22952, 12396, 5614, 23342, 18118, 19254, 4451, 17856, 20649, 20708, 19856, 6968, 11892, 7853, 16309, 23504, 15738, 15340, 11618, 4293, 11996, 7721, 16839, 14063, 11254, 15588, 6173, 8610, 7853, 20624, 10774, 4632, 18834, 22152, 19628, 20137, 6462, 24030, 13023, 7604, 24043, 18348, 4060, 17127, 18062, 8607, 5362, 20796, 6875, 19588, 11183, 5128, 18401, 22011, 532, 23280]
     #electrodePos = [2951, 2764, 3032, 401, 3760, 3083, 1373, 3028, 3030, 3203, 3205, 1262, 3778, 1402, 1342, 1285, 1301, 3287, 1682, 1641, 3973, 1510, 3389, 3390, 874, 1180, 1916, 1913, 3955, 3931, 3342, 3322, 815, 843, 937, 1931, 920, 893, 707, 389, 333, 1534, 3012, 1956, 2856, 40, 39, 91, 253, 1620, 2166, 2233, 1863, 1867, 2045, 2049, 109, 3427, 1899, 1443, 1869, 2026, 2541, 2627, 210, 270, 3478, 91, 1757, 2023, 2541, 2589, 309, 402, 492, 680, 1493, 1995, 1909, 3478, 269, 263, 292, 2589, 1531, 2363, 1928, 3480, 1328, 302, 305, 362, 376, 3790, 3507, 1175, 619, 403, 402, 536, 374, 180, 166, 1125, 1107, 582, 532, 754]
     modelNode = slicer.util.getNode(inputVolume.GetID())
     m = modelNode.GetMesh()
-    
+
     print(m)
     neigborCells = []
     cellPointIdArray = []
@@ -435,30 +435,30 @@ class BrainSurfaceNeighbouringCellsSelectionLogic(ScriptedLoadableModuleLogic):
     GeomFilt2.Update()
     y = GeomFilt2.GetOutput()
     print(y)
-    
+
     mm = slicer.mrmlScene.AddNewNodeByClass("vtkMRMLModelNode")
     mm.SetAndObservePolyData(y)
     #slicer.util.loadModel(m)
-    
+
     for e in range(len(electrodePos)):
-        
+
       trianglefilter = vtk.vtkTriangleFilter()
-    
+
       trianglefilter.SetInputData(y)
       trianglefilter.Update()
-    
+
       cellPointIds = vtk.vtkIdList()
-    
+
       trianglefilter.GetOutput().GetCellPoints(electrodePos[e], cellPointIds)
-    
+
       for i in range(0,3):
           print(cellPointIds.GetId(i))
           cellPointIdArray.append(cellPointIds.GetId(i))
-        
+
       neighbourcells = vtk.vtkIdList()
       neighbors = vtk.vtkIdTypeArray()
       for i in range(0,cellPointIds.GetNumberOfIds()):
-   
+
         idList = vtk.vtkIdList()
         idList.InsertNextId(cellPointIds.GetId(i));
 
@@ -494,11 +494,11 @@ class BrainSurfaceNeighbouringCellsSelectionLogic(ScriptedLoadableModuleLogic):
         fff.write(',')
         print(uni[i])
         i=i+1
-    fff.close()    
+    fff.close()
     #electrodePosArray = np.array(electrodePos)
-    #n_concatenate = np.concatenate((n_new_neighbourcells, electrodePosArray))   
+    #n_concatenate = np.concatenate((n_new_neighbourcells, electrodePosArray))
     #print(uni[0])
-    
+
     cellScalars = mm.GetMesh().GetCellData()
     selectionArray = cellScalars.GetArray('selection')
     if not selectionArray:
@@ -519,7 +519,7 @@ class BrainSurfaceNeighbouringCellsSelectionLogic(ScriptedLoadableModuleLogic):
     mesh = modelNode2.GetMesh()
     print("nodes within slicer")
     for i in range(len(uni)):
-        
+
         cell = mesh.GetCell(int(uni[i]))
         #cell2 = mesh.GetCell(int(arr[i]+1))
         #print(cell2)
@@ -528,7 +528,7 @@ class BrainSurfaceNeighbouringCellsSelectionLogic(ScriptedLoadableModuleLogic):
         p1 = pointIds.GetId(0)
         p2 = pointIds.GetId(1)
         p3 = pointIds.GetId(2)
-        
+
         print(p1, p2, p3)
         #ff.write(str(p1))
         #ff.write("\n")
@@ -550,7 +550,7 @@ class BrainSurfaceNeighbouringCellsSelectionLogic(ScriptedLoadableModuleLogic):
         markupsNode2.AddFiducial(a1[0],a1[1],a1[2])
         markupsNode2.AddFiducial(a2[0],a2[1],a2[2])
         markupsNode2.AddFiducial(a3[0],a3[1],a3[2])
-    
+
     d = markupsNode2.GetDisplayNode()
     d.PointLabelsVisibilityOff()"""
     logging.info('Processing completed')

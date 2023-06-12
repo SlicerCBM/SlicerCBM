@@ -16,10 +16,10 @@ class Visualisation(ScriptedLoadableModule):
 
   def __init__(self, parent):
     ScriptedLoadableModule.__init__(self, parent)
-    self.parent.title = "Visualisation"  # TODO: make this more human readable by adding spaces
-    self.parent.categories = ["CBM.Biomechanical"]  # TODO: set categories (folders where the module shows up in the module selector)
+    self.parent.title = "Visualisation"
+    self.parent.categories = ["CBM.Biomechanical"]
     self.parent.dependencies = []  # TODO: add here list of module names that this module requires
-    self.parent.contributors = ["saima safdar"]  # TODO: replace with "Firstname Lastname (Organization)"
+    self.parent.contributors = ["Saima Safdar"]  # TODO: replace with "Firstname Lastname (Organization)"
     self.parent.helpText = """
 This module helps in visualising brain deformation results using colours and bar graphs representing the deformation in mm.
 """  # TODO: update with short description of the module
@@ -75,23 +75,23 @@ class VisualisationWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
 
     self.ui.scalarBar.connect('toggled(bool)',self.onScalarCheckBox)
     self.ui.invertOutputCheckBox.connect("toggled(bool)", self.updateParameterNodeFromGUI)
-    
+
     self.addObserver(slicer.mrmlScene, slicer.mrmlScene.StartCloseEvent, self.onSceneStartClose)
     self.addObserver(slicer.mrmlScene, slicer.mrmlScene.EndCloseEvent, self.onSceneEndClose)
 
     self.ui.applyButton.connect('clicked(bool)', self.onApplyButton)
-    
-    
+
+
 
     # Initial GUI update
     self.updateGUIFromParameterNode()
-    
+
 
   def onScalarCheckBox(self):
     #check un check scalar bar
     self.logic.updateScalarBar(self.scalarBar.checked)
     self.updateParameterNodeFromGUI()
-        
+
   def cleanup(self):
     """
     Called when the application closes and the module widget is destroyed.
@@ -143,7 +143,7 @@ class VisualisationWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     wasBlocked = self.ui.model.blockSignals(True)
     self.ui.model.setCurrentNode(self._parameterNode.GetNodeReference("model"))
     self.ui.model.blockSignals(wasBlocked)
-    
+
     wasBlocked = self.ui.scalarBar.blockSignals(True)
     self.ui.scalarBar.checked = (self._parameterNode.GetParameter("scalarBarLabel") == "true")
     self.ui.scalarBar.blockSignals(wasBlocked)
@@ -152,8 +152,8 @@ class VisualisationWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     wasBlocked = self.ui.invertOutputCheckBox.blockSignals(True)
     self.ui.invertOutputCheckBox.checked = (self._parameterNode.GetParameter("Invert") == "true")
     self.ui.invertOutputCheckBox.blockSignals(wasBlocked)
-    
-   
+
+
 
     # Update buttons states and tooltips
     if self._parameterNode.GetNodeReference("InputVolume") and self._parameterNode.GetNodeReference("OutputVolume"):
@@ -211,7 +211,7 @@ class VisualisationLogic(ScriptedLoadableModuleLogic):
       parameterNode.SetParameter("Threshold", "50.0")
     if not parameterNode.GetParameter("Invert"):
       parameterNode.SetParameter("Invert", "false")
-      
+
   def onProcessingStatusUpdate(self, cliNode, event):
     print("Got a %s from a %s" % (event, cliNode.GetClassName()))
     if cliNode.IsA('vtkMRMLCommandLineModuleNode'):
@@ -224,7 +224,7 @@ class VisualisationLogic(ScriptedLoadableModuleLogic):
       else:
         # success
         print("CLI execution succeeded. Output model node ID: "+cliNode.GetParameterAsString("OutputGeometry"))
-        
+
   def updateScalarBar(self, scalarBar=False):
       if scalarBar:
         sliceAnnotations = slicer.modules.DataProbeInstance.infoWidget.sliceAnnotations
@@ -240,10 +240,10 @@ class VisualisationLogic(ScriptedLoadableModuleLogic):
         # Disable slice annotations persistently (after Slicer restarts)
         settings = qt.QSettings()
         settings.setValue("DataProbe/sliceViewAnnotations.enabled", 0)
-          
-    
-        
-        
+
+
+
+
   def run(self, inputMRI, inputTransform, model, invert=False):
     """
     Run the processing algorithm.
@@ -261,45 +261,45 @@ class VisualisationLogic(ScriptedLoadableModuleLogic):
     transformNode = slicer.util.getNode(inputTransform.GetID())
     #get scalar volume node
     n = slicer.util.getNode(inputMRI.GetID())
-   
+
     m = slicer.util.getNode(model.GetID())
-    #for hardening the transform on the node 
+    #for hardening the transform on the node
     n.SetAndObserveTransformNodeID(transformNode.GetID())
     n.HardenTransform()
-    
-    
-    #adding new scalar volume node 
+
+
+    #adding new scalar volume node
     disNode=slicer.mrmlScene.AddNewNodeByClass("vtkMRMLScalarVolumeNode")
     disNode.SetName("displacementFieldVolume")
-    #get the displacement field volume node by using transform 
+    #get the displacement field volume node by using transform
     slicer.modules.transforms.logic().CreateDisplacementVolumeFromTransform(transformNode, n, True, disNode)
-    
+
     #add new model node
     nModel = slicer.mrmlScene.AddNewNodeByClass("vtkMRMLModelNode")
-    
+
     params = {'InputVolume': n.GetID(), 'InputModel': m.GetID(), 'OutputModel' : nModel.GetID()}
     #apply probe model with volume
     #probeLogic = slicer.modules.probevolumewithmodel.logic()
     #probeLogic.Apply(disNode, m)
     cliNode = slicer.cli.runSync(slicer.modules.probevolumewithmodel, None, params)
     #cliNode.AddObserver('ModifiedEvent', onProcessingStatusUpdate)
-    
-    
+
+
     #enable slice annotations
     # Disable slice annotations immediately
     d.EdgeVisibilityOn() #edge visibility of the model
     d.Visibility2DOn() #slice view visibility
     #set clippin 0 off 1 on
     d.SetClipping(0)
-    #set opacity of the model 
+    #set opacity of the model
     d.SetOpacity(0.4)
     #to turn on and off scalars
     d.ScalarVisibilityOn()
     #set scalar range mode
-    
+
     d.SetActiveScalarName("NRRDImage")
     d.SetScalarRangeFlag(0) # manual 0 , active scalar (auto) 1, color table (LUT) 2, data type 3 direct color mapping 4
-    
+
     #for changing the color of the model
     d.SetAndObserveColorNodeID("vtkMRMLColorTableNodeGrey")
 #

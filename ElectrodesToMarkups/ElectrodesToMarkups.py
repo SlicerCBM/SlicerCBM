@@ -16,8 +16,8 @@ class ElectrodesToMarkups(ScriptedLoadableModule):
 
   def __init__(self, parent):
     ScriptedLoadableModule.__init__(self, parent)
-    self.parent.title = "ElectrodesToMarkups"  # TODO: make this more human readable by adding spaces
-    self.parent.categories = ["CBM.Biomechanical.Electrodes"]
+    self.parent.title = "Electrodes To Markups"
+    self.parent.categories = ["CBM.Biomechanical"]
     self.parent.dependencies = []  # TODO: add here list of module names that this module requires
     self.parent.contributors = ["Saima Safdar"]  # TODO: replace with "Firstname Lastname (Organization)"
     self.parent.helpText = """
@@ -196,7 +196,7 @@ class ElectrodesToMarkupsLogic(ScriptedLoadableModuleLogic):
       parameterNode.SetParameter("Threshold", "50.0")
     if not parameterNode.GetParameter("Invert"):
       parameterNode.SetParameter("Invert", "false")
-  
+
   def runLabeltoFiducial(self, inputVolume, elecPositionsFile, minSize):
     """
     Run the processing algorithm.
@@ -206,7 +206,7 @@ class ElectrodesToMarkupsLogic(ScriptedLoadableModuleLogic):
     if not inputVolume:
       raise ValueError("Input volume is invalid")
 
-    logging.info('Processing started') 
+    logging.info('Processing started')
 
     labelVolumeNode = slicer.mrmlScene.AddNewNodeByClass("vtkMRMLLabelMapVolumeNode")
     slicer.vtkSlicerVolumesLogic().CreateLabelVolumeFromVolume(slicer.mrmlScene, labelVolumeNode, inputVolume)
@@ -215,7 +215,7 @@ class ElectrodesToMarkupsLogic(ScriptedLoadableModuleLogic):
     segmentationNode = slicer.mrmlScene.AddNewNodeByClass("vtkMRMLSegmentationNode")
     segmentationNode.CreateDefaultDisplayNodes() # only needed for display
     segmentationNode.SetReferenceImageGeometryParameterFromVolumeNode(inputVolume)
-    
+
     # Create temporary segment editor to get access to effects
     segmentEditorWidget = slicer.qMRMLSegmentEditorWidget()
     segmentEditorWidget.setMRMLScene(slicer.mrmlScene)
@@ -223,9 +223,9 @@ class ElectrodesToMarkupsLogic(ScriptedLoadableModuleLogic):
     segmentEditorWidget.setMRMLSegmentEditorNode(segmentEditorNode)
     segmentEditorWidget.setSegmentationNode(segmentationNode)
     segmentEditorWidget.setMasterVolumeNode(inputVolume)
-    
-    #import volume to labelmap     
-    slicer.modules.segmentations.logic().ImportLabelmapToSegmentationNode(labelVolumeNode, segmentationNode) 
+
+    #import volume to labelmap
+    slicer.modules.segmentations.logic().ImportLabelmapToSegmentationNode(labelVolumeNode, segmentationNode)
     segmentationNode.CreateClosedSurfaceRepresentation()
     segmentEditorWidget.setCurrentSegmentID(segmentationNode.GetSegmentation().GetNthSegmentID(0))
     #segmentEditorNode.SetMasterVolumeIntensityMask(True)
@@ -245,8 +245,8 @@ class ElectrodesToMarkupsLogic(ScriptedLoadableModuleLogic):
         effect.setParameter("Operation", operationName)
         effect.setParameter("MinimumSize",minsize)
         effect.self().onApply()
-    
-        
+
+
     f = open(elecPositionsFile, 'w')
 
     # Compute centroids
@@ -256,7 +256,7 @@ class ElectrodesToMarkupsLogic(ScriptedLoadableModuleLogic):
     segStatLogic.getParameterNode().SetParameter("LabelmapSegmentStatisticsPlugin.centroid_ras.enabled", str(True))
     segStatLogic.computeStatistics()
     stats = segStatLogic.getStatistics()
-    
+
     # Place a markup point in each centroid
     markupsNode = slicer.mrmlScene.AddNewNodeByClass("vtkMRMLMarkupsFiducialNode")
     markupsNode.CreateDefaultDisplayNodes()
@@ -271,15 +271,15 @@ class ElectrodesToMarkupsLogic(ScriptedLoadableModuleLogic):
         f.write(str(centroid_ras[2]))
         f.write("\n")
 
-    
+
     f.close()
-    
+
     #clean up
     slicer.mrmlScene.RemoveNode(segmentEditorNode)
 
     logging.info('Processing completed')
-      
-      
+
+
   def run(self, inputVolume, elecPositionsFile):
     """
     Run the processing algorithm.
@@ -302,7 +302,7 @@ class ElectrodesToMarkupsLogic(ScriptedLoadableModuleLogic):
     volumeNode = slicer.util.getNode(inputVolume.GetID())
     labelVolumeNode = slicer.mrmlScene.AddNewNodeByClass("vtkMRMLLabelMapVolumeNode")
     slicer.vtkSlicerVolumesLogic().CreateLabelVolumeFromVolume(slicer.mrmlScene, labelVolumeNode, volumeNode)
-    
+
     # Fill temporary labelmap by thresholding input volumeNode
     voxelArray = slicer.util.arrayFromVolume(volumeNode)
     labelVoxelArray = slicer.util.arrayFromVolume(labelVolumeNode)
@@ -310,12 +310,12 @@ class ElectrodesToMarkupsLogic(ScriptedLoadableModuleLogic):
     #labelVoxelArray[voxelArray < 0] = 200
     labelVoxelArray[voxelArray == 0] = 0
     slicer.util.arrayFromVolumeModified(labelVolumeNode)
-    
+
     # Import labelmap to segmentation
     segmentationNode = slicer.mrmlScene.AddNewNodeByClass('vtkMRMLSegmentationNode')
     slicer.modules.segmentations.logic().ImportLabelmapToSegmentationNode(labelVolumeNode, segmentationNode)
     #segmentationNode.CreateClosedSurfaceRepresentation()
-    
+
         # Create segment editor to get access to effects
     segmentEditorWidget = slicer.qMRMLSegmentEditorWidget()
     # To show segment editor widget (useful for debugging): segmentEditorWidget.show()
@@ -325,7 +325,7 @@ class ElectrodesToMarkupsLogic(ScriptedLoadableModuleLogic):
     segmentEditorWidget.setMRMLSegmentEditorNode(segmentEditorNode)
     segmentEditorWidget.setSegmentationNode(segmentationNode)
     segmentEditorWidget.setMasterVolumeNode(volumeNode)
-    
+
     # Run segmentation
     segmentEditorWidget.setActiveEffectByName("Islands")
     effect = segmentEditorWidget.activeEffect()
@@ -337,21 +337,21 @@ class ElectrodesToMarkupsLogic(ScriptedLoadableModuleLogic):
     effect.setParameter("MinimumSize", minSize);
     #effect.self().onPreview()
     effect.self().onApply()
-    
+
     # Clean up and show results
     ################################################
-    
+
     # Clean up
     slicer.mrmlScene.RemoveNode(segmentEditorNode)
-    
+
     # Make segmentation results nicely visible in 3D
     #segmentationDisplayNode = segmentationNode.GetDisplayNode()
     #segmentationDisplayNode.SetSegmentVisibility(segmentationNode, False)
-        
-        
+
+
     # Delete temporary labelmap
     slicer.mrmlScene.RemoveNode(labelVolumeNode)
-    
+
     #segmentationNode = getNode('Segmentation')
     f = open(elecPositionsFile, 'w')
 
@@ -362,7 +362,7 @@ class ElectrodesToMarkupsLogic(ScriptedLoadableModuleLogic):
     segStatLogic.getParameterNode().SetParameter("LabelmapSegmentStatisticsPlugin.centroid_ras.enabled", str(True))
     segStatLogic.computeStatistics()
     stats = segStatLogic.getStatistics()
-    
+
     # Place a markup point in each centroid
     markupsNode = slicer.mrmlScene.AddNewNodeByClass("vtkMRMLMarkupsFiducialNode")
     markupsNode.CreateDefaultDisplayNodes()
@@ -373,7 +373,7 @@ class ElectrodesToMarkupsLogic(ScriptedLoadableModuleLogic):
         f.write(str(centroid_ras))
         f.write("\n")
 
-    
+
     f.close()
     logging.info('Processing completed')
 
