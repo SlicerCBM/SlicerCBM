@@ -23,6 +23,7 @@ Create Head Tetrahedral Grid <mesh-grid/CreateHeadTetrahedralGrid.md>
 :caption: Property
 :maxdepth: 1
 
+Fuzzy Classification <property/FuzzyClassification.md>
 ```
 
 ```{toctree}
