@@ -24,6 +24,7 @@ add_subdirectory(BrainMeshSurfaceCellsSelection)
 add_subdirectory(BrainSurfaceNeighbouringCellsSelection)
 add_subdirectory(ComputationalGridGenerator)
 add_subdirectory(CranCreator)
+add_subdirectory(CreateHeadTetrahedralGrid)
 add_subdirectory(DTISegmentation)
 add_subdirectory(ElectricalConductivity)
 add_subdirectory(ElectrodesToMarkups)
@@ -42,7 +43,6 @@ add_subdirectory(SurfaceTriangulation)
 add_subdirectory(TetrahedralMeshGenerator) # TODO: remove this?
 add_subdirectory(TumorResectionAndBRainRemodelling)
 add_subdirectory(Visualisation)
-add_subdirectory(CreateHeadTetrahedralGrid)
 
 #-----------------------------------------------------------------------------
 include(${Slicer_EXTENSION_GENERATE_CONFIG})
