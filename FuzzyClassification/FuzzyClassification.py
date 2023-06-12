@@ -21,13 +21,12 @@ class FuzzyClassification(ScriptedLoadableModule):
     self.parent.dependencies = []  # TODO: add here list of module names that this module requires
     self.parent.contributors = ["Saima Safdar"]  # TODO: replace with "Firstname Lastname (Organization)"
     self.parent.helpText = """
-This is an example of scripted loadable module bundled in an extension.
+This module performs fuzzy tissue classification of a scalar image volume.
 It module performs fuzzy classification and produces fuzzy classified ventricle, tumour (if present) and parenchyma binary images.
+See more information in <a href="https://slicercbm.org/en/latest/modules/property/FuzzyClassification.html">module documentation</a>.
 """  # TODO: update with short description of the module
     self.parent.helpText += self.getDefaultModuleDocumentationLink()  # TODO: verify that the default URL is correct or change it to the actual documentation
     self.parent.acknowledgementText = """
-This file was originally developed by Jean-Christophe Fillion-Robin, Kitware Inc.
-and Steve Pieper, Isomics, Inc. and was partially funded by NIH grant 3P41RR013218-12S1.
 """  # TODO: replace with organization, grant and thanks.
 
 
