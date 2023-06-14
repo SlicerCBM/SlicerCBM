@@ -24,14 +24,14 @@
       <longflag>otensor</longflag>
       <description><![CDATA[Output tensors file to use (MFEM format).]]></description>
     </file>
-    <image>
+    <image type="label">
       <name>masks_ifile</name>
       <label>Mask input file</label>
       <channel>input</channel>
       <longflag>imask</longflag>
       <description><![CDATA[Masks file to use (NRRD format).]]></description>
     </image>
-    <image>
+    <image type="label">
       <name>attributes_ifile</name>
       <label>Attribute input image</label>
       <channel>input</channel>
