@@ -145,7 +145,7 @@ class ElectrodesToMarkupsWidget(ScriptedLoadableModuleWidget, VTKObservationMixi
     Run processing when user clicks "Apply" button.
     """
     try:
-      self.logic.runLabeltoFiducial(self.ui.inputSelector.currentNode(), int(self.ui.minSize.value))
+      self.logic.run(self.ui.inputSelector.currentNode(), int(self.ui.minSize.value))
     except Exception as e:
       slicer.util.errorDisplay("Failed to compute results: "+str(e))
       import traceback
@@ -170,7 +170,7 @@ class ElectrodesToMarkupsLogic(ScriptedLoadableModuleLogic):
     if not parameterNode.GetParameter("Invert"):
       parameterNode.SetParameter("Invert", "false")
 
-  def runLabeltoFiducial(self, inputVolume, minSize):
+  def run(self, inputVolume, minSize):
     """
     Run the processing algorithm.
     Can be used without GUI widget.
