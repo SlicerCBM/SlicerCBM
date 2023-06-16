@@ -18,8 +18,8 @@ class ElectrodesToMarkups(ScriptedLoadableModule):
     ScriptedLoadableModule.__init__(self, parent)
     self.parent.title = "Electrodes To Markups"
     self.parent.categories = ["CBM.Biomechanical"]
-    self.parent.dependencies = []  # TODO: add here list of module names that this module requires
-    self.parent.contributors = ["Saima Safdar"]  # TODO: replace with "Firstname Lastname (Organization)"
+    self.parent.dependencies = ['GridSurfaceMarkups']  # TODO: add here list of module names that this module requires
+    self.parent.contributors = ["Saima Safdar, Benjamin Zwick"]  # TODO: replace with "Firstname Lastname (Organization)"
     self.parent.helpText = """
 This module creates the fiducials at electrode positions as identified from the ???binary segmented Computed tomography CT image.
 """  # TODO: update with short description of the module
@@ -236,6 +236,37 @@ class ElectrodesToMarkupsLogic(ScriptedLoadableModuleLogic):
         centroid_ras = stats[segmentId,"LabelmapSegmentStatisticsPlugin.centroid_ras"]
         segmentName = segmentationNode.GetSegmentation().GetSegment(segmentId).GetName()
         markupsNode.AddFiducialFromArray(centroid_ras, segmentName)
+
+    # TODO: output everything in a new "electrode markups" folder
+    # TODO: use preliminary NURBS surface to renumber electrode segments?
+
+    gridSurfaceNode = slicer.mrmlScene.AddNewNodeByClass("vtkMRMLMarkupsGridSurfaceNode")
+    # FIXME: Add parameter for grid size
+    gridSurfaceNode.SetGridResolution(8,8)
+    markupsPositions = slicer.util.arrayFromMarkupsControlPoints(markupsNode)
+    slicer.util.updateMarkupsControlPointsFromArray(gridSurfaceNode, markupsPositions)
+
+    modelNode = slicer.mrmlScene.AddNewNodeByClass("vtkMRMLModelNode")
+    gridSurfaceNode.SetOutputSurfaceModelNodeID(modelNode.GetID() if modelNode else "")
+    # gridSurfaceNode.SetOutputSurfaceModelNodeID(modelNode.)
+    # modelNode
+    # gridSurfaceNode.GetOutputSurfaceModelNode()
+
+    # ----------
+    # TODO: Extrude surface
+    # surf1.compute_normals(cell_normals=True, point_normals=True, inplace=True)
+
+    # normal = np.array(np.mean(surf1.point_normals, axis=0))
+    # normal /= np.linalg.norm(normal) # normalize
+    # extrude = thickness * normal
+
+    # # surf2 = surf1.subdivide(2, "linear")
+    # # surf2 = surf1.subdivide(1, "loop")
+    # surf2 = surf1.subdivide(2, "butterfly")
+    # # surf2.plot(show_edges=True)
+
+    # mesh = surf2.extrude(extrude)
+    # ----------
 
     #clean up
     # TODO: use segmentation directly instead of labelmap
