@@ -20,10 +20,9 @@ class FiducialsToSurface(ScriptedLoadableModule):
     self.parent.title = "Fiducials To Surface"
     self.parent.categories = ["CBM.Surface Models"]
     self.parent.dependencies = []
-    self.parent.contributors = ["Saima Safdar"] # replace with "Firstname Lastname (Organization)"
+    self.parent.contributors = ["Saima Safdar (UWA), Benjamin Zwick (UWA)"]
     self.parent.helpText = """
-This is an example of scripted loadable module bundled in an extension.
-It creates a surface utilising fiducials as cloud of points.
+This module creates a surface from a cloud of fiducial points using Delaunay triangulation.
 """
     self.parent.helpText += self.getDefaultModuleDocumentationLink()
     self.parent.acknowledgementText = """
