@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>UtilTest</class>
- <widget class="QWidget" name="UtilTest">
+ <class>FiducialsToSurface</class>
+ <widget class="qMRMLWidget" name="FiducialsToSurface">
   <property name="geometry">
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>259</width>
-    <height>120</height>
+    <width>306</width>
+    <height>276</height>
    </rect>
   </property>
   <layout class="QFormLayout" name="formLayout">
@@ -24,7 +24,7 @@
       <string>Pick the input to the algorithm.</string>
      </property>
      <property name="nodeTypes">
-      <stringlist>
+         <stringlist notr="true">
        <string>vtkMRMLMarkupsFiducialNode</string>
       </stringlist>
      </property>
@@ -37,6 +37,9 @@
      <property name="removeEnabled">
       <bool>false</bool>
      </property>
+     <property name="SlicerParameterName" stdset="0">
+      <string>inputFiducial</string>
+     </property>
     </widget>
    </item>
    <item row="1" column="0">
@@ -48,11 +51,14 @@
    </item>
    <item row="1" column="1">
     <widget class="qMRMLNodeComboBox" name="outputSelector">
+     <property name="enabled">
+      <bool>false</bool>
+     </property>
      <property name="toolTip">
       <string>Pick the output to the algorithm.</string>
      </property>
      <property name="nodeTypes">
-      <stringlist>
+         <stringlist notr="true">
        <string>vtkMRMLModelNode</string>
       </stringlist>
      </property>
@@ -67,6 +73,26 @@
      </property>
      <property name="removeEnabled">
       <bool>true</bool>
+     </property>
+     <property name="SlicerParameterName" stdset="0">
+      <string>outputModel</string>
+     </property>
+    </widget>
+   </item>
+   <item row="2" column="0">
+    <widget class="QLabel" name="label_4">
+     <property name="text">
+      <string>Enable Screenshots:</string>
+     </property>
+    </widget>
+   </item>
+   <item row="2" column="1">
+    <widget class="QCheckBox" name="enableScreenshotsFlagCheckBox">
+     <property name="toolTip">
+      <string>If checked, take screen shots for tutorials. Use Save Data to write them to disk.</string>
+     </property>
+     <property name="text">
+      <string/>
      </property>
     </widget>
    </item>
@@ -83,22 +109,18 @@
      </property>
     </widget>
    </item>
-   <item row="2" column="1">
-    <widget class="QCheckBox" name="enableScreenshotsFlagCheckBox">
-     <property name="toolTip">
-      <string>If checked, take screen shots for tutorials. Use Save Data to write them to disk.</string>
+   <item row="4" column="0" colspan="2">
+    <spacer name="verticalSpacer">
+     <property name="orientation">
+      <enum>Qt::Vertical</enum>
      </property>
-     <property name="text">
-      <string/>
+     <property name="sizeHint" stdset="0">
+      <size>
+       <width>20</width>
+       <height>40</height>
+      </size>
      </property>
-    </widget>
-   </item>
-   <item row="2" column="0">
-    <widget class="QLabel" name="label_4">
-     <property name="text">
-      <string>Enable Screenshots:</string>
-     </property>
-    </widget>
+    </spacer>
    </item>
   </layout>
  </widget>
@@ -108,7 +130,46 @@
    <extends>QWidget</extends>
    <header>qMRMLNodeComboBox.h</header>
   </customwidget>
+  <customwidget>
+   <class>qMRMLWidget</class>
+   <extends>QWidget</extends>
+   <header>qMRMLWidget.h</header>
+   <container>1</container>
+  </customwidget>
  </customwidgets>
  <resources/>
- <connections/>
+ <connections>
+  <connection>
+   <sender>FiducialsToSurface</sender>
+   <signal>mrmlSceneChanged(vtkMRMLScene*)</signal>
+   <receiver>inputSelector</receiver>
+   <slot>setMRMLScene(vtkMRMLScene*)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>20</x>
+     <y>20</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>20</x>
+     <y>20</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>FiducialsToSurface</sender>
+   <signal>mrmlSceneChanged(vtkMRMLScene*)</signal>
+   <receiver>outputSelector</receiver>
+   <slot>setMRMLScene(vtkMRMLScene*)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>20</x>
+     <y>20</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>20</x>
+     <y>20</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
 </ui>
