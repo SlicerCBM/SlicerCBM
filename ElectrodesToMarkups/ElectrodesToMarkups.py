@@ -18,11 +18,10 @@ class ElectrodesToMarkups(ScriptedLoadableModule):
     ScriptedLoadableModule.__init__(self, parent)
     self.parent.title = "Electrodes To Markups"
     self.parent.categories = ["CBM.Biomechanical"]
-    self.parent.dependencies = []  # TODO: add here list of module names that this module requires
-    self.parent.contributors = ["Saima Safdar"]  # TODO: replace with "Firstname Lastname (Organization)"
+    self.parent.dependencies = ['GridSurfaceMarkups']  # TODO: add here list of module names that this module requires
+    self.parent.contributors = ["Saima Safdar, Benjamin Zwick"]  # TODO: replace with "Firstname Lastname (Organization)"
     self.parent.helpText = """
-This is an example of scripted loadable module bundled in an extension.
-It module creates the fiducials at electrode positions as identified from the binary segmented Computed tomography CT image.
+This module creates the fiducials at electrode positions as identified from the ???binary segmented Computed tomography CT image.
 """  # TODO: update with short description of the module
     self.parent.helpText += self.getDefaultModuleDocumentationLink()  # TODO: verify that the default URL is correct or change it to the actual documentation
     self.parent.acknowledgementText = """
@@ -69,12 +68,8 @@ class ElectrodesToMarkupsWidget(ScriptedLoadableModuleWidget, VTKObservationMixi
     self.ui.parameterNodeSelector.connect('currentNodeChanged(vtkMRMLNode*)', self.setParameterNode)
 
     self.ui.inputSelector.connect("currentNodeChanged(vtkMRMLNode*)", self.updateParameterNodeFromGUI)
-    #self.ui.outputSelector.connect("currentNodeChanged(vtkMRMLNode*)", self.updateParameterNodeFromGUI)
-    #self.ui.imageThresholdSliderWidget.connect("valueChanged(double)", self.updateParameterNodeFromGUI)
-    #self.ui.invertOutputCheckBox.connect("toggled(bool)", self.updateParameterNodeFromGUI)
 
-    #self.ui.applyButton.connect('clicked(bool)', self.onApplyButton)
-    self.ui.lButton.connect('clicked(bool)', self.onApplylButton)
+    self.ui.lButton.connect('clicked(bool)', self.onApplyButton)
 
     # Initial GUI update
     self.updateGUIFromParameterNode()
@@ -123,18 +118,6 @@ class ElectrodesToMarkupsWidget(ScriptedLoadableModuleWidget, VTKObservationMixi
     self.ui.inputSelector.setCurrentNode(self._parameterNode.GetNodeReference("InputVolume"))
     self.ui.inputSelector.blockSignals(wasBlocked)
 
-    #wasBlocked = self.ui.outputSelector.blockSignals(True)
-    #self.ui.outputSelector.setCurrentNode(self._parameterNode.GetNodeReference("OutputVolume"))
-    #self.ui.outputSelector.blockSignals(wasBlocked)
-
-    #wasBlocked = self.ui.imageThresholdSliderWidget.blockSignals(True)
-    #self.ui.imageThresholdSliderWidget.value = float(self._parameterNode.GetParameter("Threshold"))
-    #self.ui.imageThresholdSliderWidget.blockSignals(wasBlocked)
-
-    #wasBlocked = self.ui.invertOutputCheckBox.blockSignals(True)
-    #self.ui.invertOutputCheckBox.checked = (self._parameterNode.GetParameter("Invert") == "true")
-    #self.ui.invertOutputCheckBox.blockSignals(wasBlocked)
-
     # Update buttons states and tooltips
     if self._parameterNode.GetNodeReference("InputVolume"):
       self.ui.lButton.toolTip = "Compute electrode positions and place fiducials"
@@ -162,17 +145,7 @@ class ElectrodesToMarkupsWidget(ScriptedLoadableModuleWidget, VTKObservationMixi
     Run processing when user clicks "Apply" button.
     """
     try:
-      self.logic.run(self.ui.inputSelector.currentNode(), self.ui.elecPositions.currentPath)
-    except Exception as e:
-      slicer.util.errorDisplay("Failed to compute results: "+str(e))
-      import traceback
-      traceback.print_exc()
-  def onApplylButton(self):
-    """
-    Run processing when user clicks "Apply" button.
-    """
-    try:
-      self.logic.runLabeltoFiducial(self.ui.inputSelector.currentNode(), self.ui.elecPositions.currentPath, int(self.ui.minSize.value))
+      self.logic.run(self.ui.inputSelector.currentNode(), int(self.ui.minSize.value))
     except Exception as e:
       slicer.util.errorDisplay("Failed to compute results: "+str(e))
       import traceback
@@ -197,7 +170,7 @@ class ElectrodesToMarkupsLogic(ScriptedLoadableModuleLogic):
     if not parameterNode.GetParameter("Invert"):
       parameterNode.SetParameter("Invert", "false")
 
-  def runLabeltoFiducial(self, inputVolume, elecPositionsFile, minSize):
+  def run(self, inputVolume, minSize):
     """
     Run the processing algorithm.
     Can be used without GUI widget.
@@ -211,7 +184,7 @@ class ElectrodesToMarkupsLogic(ScriptedLoadableModuleLogic):
     labelVolumeNode = slicer.mrmlScene.AddNewNodeByClass("vtkMRMLLabelMapVolumeNode")
     slicer.vtkSlicerVolumesLogic().CreateLabelVolumeFromVolume(slicer.mrmlScene, labelVolumeNode, inputVolume)
     #convert volume to labelmap
- # Create segmentation
+    # Create segmentation
     segmentationNode = slicer.mrmlScene.AddNewNodeByClass("vtkMRMLSegmentationNode")
     segmentationNode.CreateDefaultDisplayNodes() # only needed for display
     segmentationNode.SetReferenceImageGeometryParameterFromVolumeNode(inputVolume)
@@ -222,10 +195,12 @@ class ElectrodesToMarkupsLogic(ScriptedLoadableModuleLogic):
     segmentEditorNode = slicer.mrmlScene.AddNewNodeByClass("vtkMRMLSegmentEditorNode")
     segmentEditorWidget.setMRMLSegmentEditorNode(segmentEditorNode)
     segmentEditorWidget.setSegmentationNode(segmentationNode)
-    segmentEditorWidget.setMasterVolumeNode(inputVolume)
+    segmentEditorWidget.setSourceVolumeNode(inputVolume)
 
     #import volume to labelmap
     slicer.modules.segmentations.logic().ImportLabelmapToSegmentationNode(labelVolumeNode, segmentationNode)
+    # TODO: use segmentation directly instead of labelmap
+
     segmentationNode.CreateClosedSurfaceRepresentation()
     segmentEditorWidget.setCurrentSegmentID(segmentationNode.GetSegmentation().GetNthSegmentID(0))
     #segmentEditorNode.SetMasterVolumeIntensityMask(True)
@@ -246,9 +221,6 @@ class ElectrodesToMarkupsLogic(ScriptedLoadableModuleLogic):
         effect.setParameter("MinimumSize",minsize)
         effect.self().onApply()
 
-
-    f = open(elecPositionsFile, 'w')
-
     # Compute centroids
     import SegmentStatistics
     segStatLogic = SegmentStatistics.SegmentStatisticsLogic()
@@ -264,118 +236,44 @@ class ElectrodesToMarkupsLogic(ScriptedLoadableModuleLogic):
         centroid_ras = stats[segmentId,"LabelmapSegmentStatisticsPlugin.centroid_ras"]
         segmentName = segmentationNode.GetSegmentation().GetSegment(segmentId).GetName()
         markupsNode.AddFiducialFromArray(centroid_ras, segmentName)
-        f.write(str(-centroid_ras[0]))
-        f.write(",")
-        f.write(str(-centroid_ras[1]))
-        f.write(",")
-        f.write(str(centroid_ras[2]))
-        f.write("\n")
 
+    # TODO: output everything in a new "electrode markups" folder
+    # TODO: use preliminary NURBS surface to renumber electrode segments?
 
-    f.close()
+    gridSurfaceNode = slicer.mrmlScene.AddNewNodeByClass("vtkMRMLMarkupsGridSurfaceNode")
+    # FIXME: Add parameter for grid size
+    gridSurfaceNode.SetGridResolution(8,8)
+    markupsPositions = slicer.util.arrayFromMarkupsControlPoints(markupsNode)
+    slicer.util.updateMarkupsControlPointsFromArray(gridSurfaceNode, markupsPositions)
+
+    modelNode = slicer.mrmlScene.AddNewNodeByClass("vtkMRMLModelNode")
+    gridSurfaceNode.SetOutputSurfaceModelNodeID(modelNode.GetID() if modelNode else "")
+    # gridSurfaceNode.SetOutputSurfaceModelNodeID(modelNode.)
+    # modelNode
+    # gridSurfaceNode.GetOutputSurfaceModelNode()
+
+    # ----------
+    # TODO: Extrude surface
+    # surf1.compute_normals(cell_normals=True, point_normals=True, inplace=True)
+
+    # normal = np.array(np.mean(surf1.point_normals, axis=0))
+    # normal /= np.linalg.norm(normal) # normalize
+    # extrude = thickness * normal
+
+    # # surf2 = surf1.subdivide(2, "linear")
+    # # surf2 = surf1.subdivide(1, "loop")
+    # surf2 = surf1.subdivide(2, "butterfly")
+    # # surf2.plot(show_edges=True)
+
+    # mesh = surf2.extrude(extrude)
+    # ----------
 
     #clean up
+    # TODO: use segmentation directly instead of labelmap
     slicer.mrmlScene.RemoveNode(segmentEditorNode)
 
     logging.info('Processing completed')
 
-
-  def run(self, inputVolume, elecPositionsFile):
-    """
-    Run the processing algorithm.
-    Can be used without GUI widget.
-    """
-
-    if not inputVolume:
-      raise ValueError("Input volume is invalid")
-
-    logging.info('Processing started')
-
-    # Compute the thresholded output volume using the Threshold Scalar Volume CLI module
-    """cliParams = {
-      'InputVolume': inputVolume.GetID(),
-      'OutputVolume': outputVolume.GetID(),
-      'ThresholdValue' : imageThreshold,
-      'ThresholdType' : 'Below' if invert else 'Above'
-      }
-    cliNode = slicer.cli.run(slicer.modules.thresholdscalarvolume, None, cliParams, wait_for_completion=True)"""
-    volumeNode = slicer.util.getNode(inputVolume.GetID())
-    labelVolumeNode = slicer.mrmlScene.AddNewNodeByClass("vtkMRMLLabelMapVolumeNode")
-    slicer.vtkSlicerVolumesLogic().CreateLabelVolumeFromVolume(slicer.mrmlScene, labelVolumeNode, volumeNode)
-
-    # Fill temporary labelmap by thresholding input volumeNode
-    voxelArray = slicer.util.arrayFromVolume(volumeNode)
-    labelVoxelArray = slicer.util.arrayFromVolume(labelVolumeNode)
-    labelVoxelArray[voxelArray > 0] = 200
-    #labelVoxelArray[voxelArray < 0] = 200
-    labelVoxelArray[voxelArray == 0] = 0
-    slicer.util.arrayFromVolumeModified(labelVolumeNode)
-
-    # Import labelmap to segmentation
-    segmentationNode = slicer.mrmlScene.AddNewNodeByClass('vtkMRMLSegmentationNode')
-    slicer.modules.segmentations.logic().ImportLabelmapToSegmentationNode(labelVolumeNode, segmentationNode)
-    #segmentationNode.CreateClosedSurfaceRepresentation()
-
-        # Create segment editor to get access to effects
-    segmentEditorWidget = slicer.qMRMLSegmentEditorWidget()
-    # To show segment editor widget (useful for debugging): segmentEditorWidget.show()
-    segmentEditorWidget.setMRMLScene(slicer.mrmlScene)
-    segmentEditorNode = slicer.vtkMRMLSegmentEditorNode()
-    slicer.mrmlScene.AddNode(segmentEditorNode)
-    segmentEditorWidget.setMRMLSegmentEditorNode(segmentEditorNode)
-    segmentEditorWidget.setSegmentationNode(segmentationNode)
-    segmentEditorWidget.setMasterVolumeNode(volumeNode)
-
-    # Run segmentation
-    segmentEditorWidget.setActiveEffectByName("Islands")
-    effect = segmentEditorWidget.activeEffect()
-    # You can change parameters by calling: effect.setParameter("MyParameterName", someValue)
-    # Most effect don't have onPreview, you can just call onApply
-    operationName = "SPLIT_ISLANDS_TO_SEGMENTS"
-    minSize = 30
-    effect.setParameter("Operation",operationName)
-    effect.setParameter("MinimumSize", minSize);
-    #effect.self().onPreview()
-    effect.self().onApply()
-
-    # Clean up and show results
-    ################################################
-
-    # Clean up
-    slicer.mrmlScene.RemoveNode(segmentEditorNode)
-
-    # Make segmentation results nicely visible in 3D
-    #segmentationDisplayNode = segmentationNode.GetDisplayNode()
-    #segmentationDisplayNode.SetSegmentVisibility(segmentationNode, False)
-
-
-    # Delete temporary labelmap
-    slicer.mrmlScene.RemoveNode(labelVolumeNode)
-
-    #segmentationNode = getNode('Segmentation')
-    f = open(elecPositionsFile, 'w')
-
-    # Compute centroids
-    import SegmentStatistics
-    segStatLogic = SegmentStatistics.SegmentStatisticsLogic()
-    segStatLogic.getParameterNode().SetParameter("Segmentation", segmentationNode.GetID())
-    segStatLogic.getParameterNode().SetParameter("LabelmapSegmentStatisticsPlugin.centroid_ras.enabled", str(True))
-    segStatLogic.computeStatistics()
-    stats = segStatLogic.getStatistics()
-
-    # Place a markup point in each centroid
-    markupsNode = slicer.mrmlScene.AddNewNodeByClass("vtkMRMLMarkupsFiducialNode")
-    markupsNode.CreateDefaultDisplayNodes()
-    for segmentId in stats['SegmentIDs']:
-        centroid_ras = stats[segmentId,"LabelmapSegmentStatisticsPlugin.centroid_ras"]
-        segmentName = segmentationNode.GetSegmentation().GetSegment(segmentId).GetName()
-        markupsNode.AddFiducialFromArray(centroid_ras, segmentName)
-        f.write(str(centroid_ras))
-        f.write("\n")
-
-
-    f.close()
-    logging.info('Processing completed')
 
 #
 # ElectrodesToMarkupsTest
@@ -413,37 +311,7 @@ class ElectrodesToMarkupsTest(ScriptedLoadableModuleTest):
 
     self.delayDisplay("Starting the test")
 
-    # Get/create input data
-
-    import SampleData
-    inputVolume = SampleData.downloadFromURL(
-      nodeNames='MRHead',
-      fileNames='MR-Head.nrrd',
-      uris='https://github.com/Slicer/SlicerTestingData/releases/download/MD5/39b01631b7b38232a220007230624c8e',
-      checksums='MD5:39b01631b7b38232a220007230624c8e')[0]
-    self.delayDisplay('Finished with download and loading')
-
-    inputScalarRange = inputVolume.GetImageData().GetScalarRange()
-    self.assertEqual(inputScalarRange[0], 0)
-    self.assertEqual(inputScalarRange[1], 279)
-
-    outputVolume = slicer.mrmlScene.AddNewNodeByClass("vtkMRMLScalarVolumeNode")
-    threshold = 50
-
-    # Test the module logic
-
-    logic = ElectrodesToMarkupsLogic()
-
-    # Test algorithm with non-inverted threshold
-    logic.run(inputVolume, outputVolume, threshold, False)
-    outputScalarRange = outputVolume.GetImageData().GetScalarRange()
-    self.assertEqual(outputScalarRange[0], inputScalarRange[0])
-    self.assertEqual(outputScalarRange[1], threshold)
-
-    # Test algorithm with inverted threshold
-    logic.run(inputVolume, outputVolume, threshold, True)
-    outputScalarRange = outputVolume.GetImageData().GetScalarRange()
-    self.assertEqual(outputScalarRange[0], inputScalarRange[0])
-    self.assertEqual(outputScalarRange[1], inputScalarRange[1])
+    # TODO: Add tests...
+    self.delayDisplay('This test does nothing!')
 
     self.delayDisplay('Test passed')
