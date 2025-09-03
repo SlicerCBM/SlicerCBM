@@ -4,8 +4,7 @@ import vtk, qt, ctk, slicer
 from slicer.ScriptedLoadableModule import *
 import logging
 import numpy as np
-#import pyvista as pv
-#import pyacvd
+
 #
 # FiducialsToSurface
 #
@@ -66,18 +65,6 @@ class FiducialsToSurfaceWidget(ScriptedLoadableModuleWidget):
     self.ui.applyButton.enabled = self.ui.inputSelector.currentNode() and self.ui.outputSelector.currentNode()
 
   def onApplyButton(self):
-    try:
-       import pyacvd
-       import pyvista as pv
-    except ModuleNotFoundError as e:
-        if slicer.util.confirmOkCancelDisplay("This module requires 'pyacvd, pyvista' Python package. Click OK to install."):
-            slicer.util.pip_install("pyacvd")
-            slicer.util.pip_install("pyvista")
-            #import tensorflow
-            import pyacvd
-            import pyvista as pv
-
-
     logic = FiducialsToSurfaceLogic()
     enableScreenshotsFlag = self.ui.enableScreenshotsFlagCheckBox.checked
     try:
@@ -132,6 +119,16 @@ class FiducialsToSurfaceLogic(ScriptedLoadableModuleLogic):
     """
     Run the actual algorithm
     """
+
+    try:
+      import pyvista as pv
+    except ModuleNotFoundError:
+      if slicer.util.confirmOkCancelDisplay("This module requires 'pyvista' Python package. Click OK to install it now."):
+        slicer.util.pip_install("pyvista")
+        import pyvista as pv
+      else:
+        slicer.util.errorDisplay("This module requires 'pyvista' Python package but it was not installed.")
+        return False
 
     if not self.isValidInputOutputData(inputFiducial, outputModel):
       slicer.util.errorDisplay('Input Fiducial is the same as output model. Choose a different output volume.')
