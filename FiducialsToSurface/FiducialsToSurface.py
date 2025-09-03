@@ -131,7 +131,7 @@ class FiducialsToSurfaceLogic(ScriptedLoadableModuleLogic):
         return False
 
     if not self.isValidInputOutputData(inputFiducial, outputModel):
-      slicer.util.errorDisplay('Input Fiducial is the same as output model. Choose a different output volume.')
+      slicer.util.errorDisplay('Input Fiducial is the same as output model. Choose a different output model.')
       return False
 
     logging.info('Processing started')
