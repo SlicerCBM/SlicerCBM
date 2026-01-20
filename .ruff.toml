@@ -1,11 +1,6 @@
 target-version = "py312"
 line-length = 88
 
-extend-exclude = [
-  "Base/QTGUI/Testing/Data/Input/qSlicerScriptedLoadableModuleSyntaxErrorTest.py",
-  "Base/QTGUI/Testing/Data/Input/qSlicerScriptedLoadableModuleSyntaxErrorTestWidget.py",
-]
-
 [lint]
 select = [
 #  "ARG",         # flake8-unused-arguments
@@ -129,15 +124,3 @@ extend-ignore = [
 [lint.pydocstyle]
 convention = "pep257"
 
-[lint.per-file-ignores]
-# Module imported but unused
-"Base/Python/mrml.py" = ["F401"]
-"Base/Python/slicer/logic.py" = ["F401"]
-"Base/Python/slicer/parameterNodeWrapper/__init__.py" = ["F401"]
-"Base/Python/vtkAddon.py" = ["F401"]
-"Base/Python/vtkITK.py" = ["F401"]
-"Base/Python/vtkSegmentationCore.py" = ["F401"]
-"Base/Python/vtkTeem.py" = ["F401"]
-"Modules/*/__init__.py" = ["F401"]
-"Extensions/*/__init__.py" = ["F401"]
-"Utilities/*/__init__.py" = ["F401"]
