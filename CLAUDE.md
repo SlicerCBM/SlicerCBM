@@ -26,7 +26,7 @@ ruff format .          # Format
 
 Key settings:
 - Python 3.12+ target
-- Line length: 550
+- Line length: 88
 - PEP 257 docstring convention
 
 ## Module Architecture
